@@ -1,0 +1,61 @@
+import { router } from "@inertiajs/react";
+import { useEffect, useState } from "react";
+const Dashboard = () => {
+    const token = localStorage.getItem("token");
+    if (token === null) {
+        router.visit("/login");
+    }
+    const [user, setUser] = useState(null);
+
+    useEffect(() => {
+        const fetchUser = async () => {
+            try {
+                const response = await fetch("http://127.0.0.1:8000/api/user", {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+                if (response.ok) {
+                    const userData = await response.json();
+                    setUser(userData);
+                    console.log("User data:", userData);
+                } else {
+                    router.visit("/login");
+                }
+            } catch (error) {
+                router.visit("/login");
+            }
+        };
+
+        if (token) {
+            fetchUser();
+        }
+    }, [token]);
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+
+        try {
+            await axios.post("http://127.0.0.1:8000/api/logout", {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+        } catch (error) {
+            console.error("Logout error:", error);
+        }
+        localStorage.removeItem("token");
+        router.visit("/login");
+    };
+    return (
+        <>
+            <button
+                className="btn btn-outline btn-error w-70"
+                onClick={handleSubmit}
+            >
+                Logout
+            </button>
+        </>
+    );
+};
+
+export default Dashboard;

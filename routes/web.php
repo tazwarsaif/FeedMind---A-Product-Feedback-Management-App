@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\GeneralController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -14,3 +15,6 @@ Route::get('/scrape', function () {
     return Inertia::render('ScrapePage');
 });
 
+Route::get('/login',[GeneralController::class,'loginView']);
+Route::get('/register',[GeneralController::class,'registerView']);
+Route::get('/dashboard',[GeneralController::class,'dashboardView']);
