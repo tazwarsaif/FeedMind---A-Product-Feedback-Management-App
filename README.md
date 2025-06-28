@@ -23,14 +23,12 @@ FeedMind is an AI-enhanced product feedback and analysis platform designed to he
 
 | Layer           | Technology               |
 |----------------|---------------------------|
-| Backend         | Laravel 10, PHP 8.2       |
+| Backend         | Laravel 12, PHP 8.4       |
 | Frontend        | React + Inertia.js        |
 | AI Integration  | Ollama (local LLM), OpenAI |
 | Web Scraping    | Node.js + Puppeteer       |
-| Auth            | Laravel Sanctum + Google OAuth |
-| Realtime        | Laravel WebSockets (Pusher or Socket.IO) |
-| Database        | MySQL                     |
-| Others          | TailwindCSS, Axios        |
+| Auth            |                           |
+| Database        | SQLite                     |
 
 ---
 
