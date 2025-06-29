@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\Panther\Client;
 use App\Models\Conversation;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class ChatController extends Controller
@@ -62,7 +63,7 @@ class ChatController extends Controller
     /////
     public function index()
     {
-        $conversations = auth()->user()->conversations()->latest()->get();
+        $conversations = Auth::user()->conversations()->latest()->get();
         return Inertia::render('Chat/Index', [
             'conversations' => $conversations
         ]);
@@ -71,9 +72,9 @@ class ChatController extends Controller
     public function startConversation(Request $request)
     {
         $request->validate(['title' => 'required|string|max:255']);
-
+        $user = Auth::user();
         $conversation = Conversation::create([
-            'user_id' => $request->user_id,
+            'user_id' => $user->id,
             'title' => $request->title,
         ]);
 
@@ -82,7 +83,7 @@ class ChatController extends Controller
 
     public function getConversation($id)
     {
-        $conversation = Conversation::with('messages')->where('user_id', auth()->id())->findOrFail($id);
+        $conversation = Conversation::with('messages')->where('user_id', Auth::user()->id)->findOrFail($id);
         return response()->json($conversation);
     }
 
@@ -92,8 +93,8 @@ class ChatController extends Controller
             'conversation_id' => 'required|exists:conversations,id',
             'prompt' => 'required|string',
         ]);
-
-        $conversation = Conversation::where('user_id', "3")->findOrFail($request->conversation_id);
+        $user = Auth::user();
+        $conversation = Conversation::where('user_id', $user->id)->findOrFail($request->conversation_id);
 
         // Save user message
         $userMsg = $conversation->messages()->create([
