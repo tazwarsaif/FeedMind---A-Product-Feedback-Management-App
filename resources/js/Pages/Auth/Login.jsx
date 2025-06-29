@@ -1,5 +1,4 @@
 import { router } from "@inertiajs/react";
-import axios from "axios";
 import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
 function Login() {
@@ -40,10 +39,20 @@ function Login() {
         event.preventDefault();
         const formData = { email: mail, password };
         try {
-            const response = await axios.post(
-                "http://127.0.0.1:8000/api/login",
-                formData
-            );
+            const response = await fetch("http://127.0.0.1:8000/api/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Accept: "application/json",
+                },
+                body: JSON.stringify(formData),
+            });
+
+            if (!response.ok) {
+                throw { response };
+            }
+
+            const data = await response.json();
 
             const token = response.data.auth_token;
             if (!token) {
