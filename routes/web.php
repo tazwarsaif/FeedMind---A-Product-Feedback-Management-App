@@ -29,3 +29,7 @@ Route::get('/scrape', function () {
 Route::get('/login',[GeneralController::class,'loginView'])->name('login');
 Route::get('/register',[GeneralController::class,'registerView'])->name('register');
 Route::get('/dashboard',[GeneralController::class,'dashboardView'])->name('dashboard');
+
+Route::get('/unauthorized', function () {
+    abort(403);
+});

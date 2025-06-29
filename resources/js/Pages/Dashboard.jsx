@@ -1,13 +1,17 @@
 import { router } from "@inertiajs/react";
 import { useEffect, useState } from "react";
+
 const Dashboard = () => {
     const token = localStorage.getItem("token");
-    if (token === null) {
-        router.visit("/login");
-    }
     const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        if (!token) {
+            router.visit("/unauthorized");
+            return;
+        }
+
         const fetchUser = async () => {
             try {
                 const response = await fetch("http://127.0.0.1:8000/api/user", {
@@ -18,22 +22,21 @@ const Dashboard = () => {
                 if (response.ok) {
                     const userData = await response.json();
                     setUser(userData);
-                    console.log("User data:", userData);
                 } else {
-                    router.visit("/login");
+                    router.visit("/unauthorized");
                 }
             } catch (error) {
-                router.visit("/login");
+                router.visit("/unauthorized");
+            } finally {
+                setLoading(false);
             }
         };
 
-        if (token) {
-            fetchUser();
-        }
+        fetchUser();
     }, [token]);
+
     const handleSubmit = async (event) => {
         event.preventDefault();
-
         try {
             await axios.post(
                 "http://127.0.0.1:8000/api/logout",
@@ -50,8 +53,22 @@ const Dashboard = () => {
         localStorage.removeItem("token");
         router.visit("/login");
     };
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex flex-row justify-center items-center">
+                <span className="loading loading-ring loading-xl"></span>
+            </div>
+        );
+    }
+
+    if (!user) {
+        window.location.href = "/unauthorized"; // Or a fallback UI
+    }
+
     return (
         <>
+            <div>Welcome, {user.name}!</div>
             <button
                 className="btn btn-outline btn-error w-70"
                 onClick={handleSubmit}

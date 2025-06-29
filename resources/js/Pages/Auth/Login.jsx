@@ -19,7 +19,7 @@ function Login() {
                 formData
             );
             const token = response.data.auth_token;
-            console.log("Success:", response.data.token);
+            console.log("Success:", response.data.auth_token);
             localStorage.setItem("token", response.data.auth_token);
             const checkAuth = async () => {
                 const response = await axios.get(
