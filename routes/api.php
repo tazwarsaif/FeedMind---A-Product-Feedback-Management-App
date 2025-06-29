@@ -13,12 +13,19 @@ Route::get('/user', function (Request $request) {
 
 
 Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/login', [AuthController::class, 'login']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
 });
 
 
-Route::post("/chat", [ChatController::class,'message']);
+// Route::post("/chat", [ChatController::class,'message']);
 Route::post('/scrape', ScrapeController::class);
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/chat', [ChatController::class, 'index']);
+    Route::post('/chat/start', [ChatController::class, 'startConversation']);
+    Route::post('/chat/message', [ChatController::class, 'sendMessage']);
+    Route::get('/chat/conversation/{id}', [ChatController::class, 'getConversation']);
+});

@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\Panther\Client;
+use App\Models\Conversation;
+use Inertia\Inertia;
 
 class ChatController extends Controller
 {
@@ -55,5 +57,78 @@ class ChatController extends Controller
         ]);
         $html = $response->body();
         return response()->json($html);
+    }
+
+    /////
+    public function index()
+    {
+        $conversations = auth()->user()->conversations()->latest()->get();
+        return Inertia::render('Chat/Index', [
+            'conversations' => $conversations
+        ]);
+    }
+
+    public function startConversation(Request $request)
+    {
+        $request->validate(['title' => 'required|string|max:255']);
+
+        $conversation = Conversation::create([
+            'user_id' => $request->user_id,
+            'title' => $request->title,
+        ]);
+
+        return response()->json($conversation);
+    }
+
+    public function getConversation($id)
+    {
+        $conversation = Conversation::with('messages')->where('user_id', auth()->id())->findOrFail($id);
+        return response()->json($conversation);
+    }
+
+    public function sendMessage(Request $request)
+    {
+        $request->validate([
+            'conversation_id' => 'required|exists:conversations,id',
+            'prompt' => 'required|string',
+        ]);
+
+        $conversation = Conversation::where('user_id', "3")->findOrFail($request->conversation_id);
+
+        // Save user message
+        $userMsg = $conversation->messages()->create([
+            'sender' => 'user',
+            'content' => $request->prompt,
+        ]);
+
+        // Fetch chat history for context (optional)
+        $chatHistory = $conversation->messages()->orderBy('created_at')->get();
+
+        $formattedMessages = $chatHistory->map(function ($msg) {
+            return [
+                'role' => $msg->sender === 'user' ? 'user' : 'assistant',
+                'content' => $msg->content,
+            ];
+        });
+
+        // Call Ollama API
+        $response = Http::post('http://localhost:11434/api/chat', [
+            'model' => 'llama3.2',
+            'messages' => $formattedMessages->toArray(),
+            'stream' => false,
+        ]);
+
+        $aiReply = $response->json()['message']['content'] ?? 'Sorry, I couldn\'t generate a response.';
+
+        // Save bot message
+        $botMsg = $conversation->messages()->create([
+            'sender' => 'bot',
+            'content' => $aiReply,
+        ]);
+
+        return response()->json([
+            'userMessage' => $userMsg,
+            'botMessage' => $botMsg,
+        ]);
     }
 }

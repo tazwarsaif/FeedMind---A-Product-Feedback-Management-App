@@ -40,11 +40,9 @@ function Login() {
             router.visit("/dashboard");
         } catch (error) {
             if (error.response) {
-                console.log(
-                    "Validation or server error:",
-                    error.response.data.error
-                );
+                console.log("Validation or server error:", error);
                 console.log(typeof error.response.data.error === "string");
+                setFormErrors({ general: error.response.data.message });
                 if (typeof error.response.data.error === "string") {
                     setFormErrors({ general: error.response.data.error });
                 } else if (typeof error.response.data.error === "object") {

@@ -35,11 +35,15 @@ const Dashboard = () => {
         event.preventDefault();
 
         try {
-            await axios.post("http://127.0.0.1:8000/api/logout", {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
+            await axios.post(
+                "http://127.0.0.1:8000/api/logout",
+                {},
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
         } catch (error) {
             console.error("Logout error:", error);
         }
