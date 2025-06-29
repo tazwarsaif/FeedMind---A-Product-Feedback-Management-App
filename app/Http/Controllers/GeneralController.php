@@ -15,6 +15,7 @@ class GeneralController extends Controller
         return inertia("Auth/Register");
     }
     public function dashboardView() {
+        //dd($request->user());
         return inertia("Dashboard");
     }
 }

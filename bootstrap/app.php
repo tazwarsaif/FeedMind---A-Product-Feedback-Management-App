@@ -12,7 +12,14 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->web(append: [
+            \App\Http\Middleware\HandleInertiaRequests::class,
+        ]);
+
+        // Register your route middleware
+        $middleware->alias([
+            'sanctum.auth' => \App\Http\Middleware\EnsureSanctumAuthenticated::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
