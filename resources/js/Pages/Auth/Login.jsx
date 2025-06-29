@@ -18,9 +18,9 @@ function Login() {
                 "http://127.0.0.1:8000/api/login",
                 formData
             );
-            const token = response.data.token;
+            const token = response.data.auth_token;
             console.log("Success:", response.data.token);
-            localStorage.setItem("token", response.data.token);
+            localStorage.setItem("token", response.data.auth_token);
             const checkAuth = async () => {
                 const response = await axios.get(
                     "http://127.0.0.1:8000/api/user",
@@ -33,8 +33,8 @@ function Login() {
                 console.log("User data:", response.data);
                 return response.data;
             };
-            if (!checkAuth()) {
-                router.visit("/login");
+            if (checkAuth()) {
+                router.visit("/dashboard");
                 return;
             }
             router.visit("/dashboard");

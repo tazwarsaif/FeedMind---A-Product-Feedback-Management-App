@@ -13,12 +13,13 @@ Route::get('/user', function (Request $request) {
 
 
 Route::post('/register', [AuthController::class, 'register']);
-    Route::post('/login', [AuthController::class, 'login']);
+Route::post('/login', [AuthController::class, 'login']);
 
+// Protected routes (require valid token)
 Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/dashboard', [AuthController::class, 'dashboard']);
     Route::post('/logout', [AuthController::class, 'logout']);
 });
-
 
 // Route::post("/chat", [ChatController::class,'message']);
 Route::post('/scrape', ScrapeController::class);
