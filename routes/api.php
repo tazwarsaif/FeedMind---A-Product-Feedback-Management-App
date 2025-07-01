@@ -8,7 +8,15 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 
 Route::get('/user', function (Request $request) {
-    return $request->user();
+    $user = $request->user();
+    $conversations = $user->conversations()
+        ->with(['messages' => function($query) {
+            // Keep messages order as is (do not order by latest)
+        }])
+        ->orderBy('created_at', 'desc')
+        ->get();
+    $user['conversations'] = $conversations;
+    return $user;
 })->middleware('auth:sanctum');
 
 

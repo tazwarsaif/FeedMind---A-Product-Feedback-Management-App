@@ -11,7 +11,29 @@ const Register = () => {
     const [formErrors, setFormErrors] = useState({});
     const [passwordConfirmation, setPasswordConfirmation] = useState("");
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    const [text, setText] = useState("");
+    const fullText = "FeedMind";
+    const [text2, setText2] = useState("");
+    const fullText2 = "A feedback management app";
+    useEffect(() => {
+        let index = 0;
+        const interval = setInterval(() => {
+            setText(fullText.slice(0, index + 1));
+            index++;
+            if (index === fullText.length) clearInterval(interval);
+        }, 50);
+        return () => clearInterval(interval);
+    }, []);
 
+    useEffect(() => {
+        let index = 0;
+        const interval = setInterval(() => {
+            setText2(fullText2.slice(0, index + 1));
+            index++;
+            if (index === fullText2.length) clearInterval(interval);
+        }, 50);
+        return () => clearInterval(interval);
+    }, []);
     const images = [
         {
             id: 1,
@@ -113,28 +135,52 @@ const Register = () => {
                 {/* Left: Image & Branding */}
                 <div className="hidden md:flex flex-col justify-between w-1/2 bg-[#2c2841] p-8 rounded-l-2xl relative overflow-hidden">
                     <div className="flex justify-between items-center z-10">
-                        <span className="text-white text-2xl font-bold tracking-widest">
-                            FeedMind
-                        </span>
-                        <a
-                            href="/"
-                            className="flex items-center space-x-2 text-xs text-gray-200 bg-[#5146a5] px-3 py-1 rounded-full hover:bg-[#6c5dd3] transition"
-                        >
-                            <span>Back to website</span>
-                            <svg
-                                width="16"
-                                height="16"
-                                fill="none"
-                                stroke="currentColor"
+                        <div className="flex flex-col justify-start">
+                            <motion.span
+                                className="text-2xl font-bold tracking-widest font-mono bg-gradient-to-r from-black via-purple-700 to-green-400 bg-clip-text text-transparent animate-gradient"
+                                style={{
+                                    backgroundSize: "200% 200%",
+                                    WebkitBackgroundClip: "text",
+                                    WebkitTextFillColor: "transparent",
+                                }}
+                                animate={{
+                                    backgroundPosition: [
+                                        "0% 50%",
+                                        "100% 50%",
+                                        "0% 50%",
+                                    ],
+                                }}
+                                transition={{
+                                    repeat: Infinity,
+                                    duration: 4,
+                                    ease: "linear",
+                                }}
                             >
-                                <path
-                                    d="M5 8h6M9 6l2 2-2 2"
-                                    strokeWidth="2"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                />
-                            </svg>
-                        </a>
+                                {text}
+                            </motion.span>
+                            <motion.span
+                                className="text-sm font-bold tracking-widest font-mono bg-gradient-to-r to-black via-purple-700 from-black bg-clip-text text-transparent animate-gradient backdrop-blur-sm p-1"
+                                style={{
+                                    backgroundSize: "200% 200%",
+                                    WebkitBackgroundClip: "text",
+                                    WebkitTextFillColor: "transparent",
+                                }}
+                                animate={{
+                                    backgroundPosition: [
+                                        "100% 50%",
+                                        "0% 50%",
+                                        "100% 50%",
+                                    ],
+                                }}
+                                transition={{
+                                    repeat: Infinity,
+                                    duration: 4,
+                                    ease: "linear",
+                                }}
+                            >
+                                {text2}
+                            </motion.span>
+                        </div>
                     </div>
 
                     {/* Image Slider */}

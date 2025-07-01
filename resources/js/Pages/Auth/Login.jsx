@@ -78,8 +78,9 @@ function Login() {
             }
 
             const data = await response.json();
+            console.log(data);
 
-            const token = response.data.auth_token;
+            const token = data.auth_token;
             if (!token) {
                 setFormErrors({
                     general: "Authentication failed. No token received.",
@@ -105,6 +106,7 @@ function Login() {
 
                 setFormErrors(errors);
             } else {
+                console.log(error);
                 setFormErrors({
                     general: "Network error or server not responding.",
                 });
