@@ -30,5 +30,3 @@ FeedMind is an AI-enhanced product feedback and analysis platform designed to he
 
 ---
 
-## 📁 Project Structure
-
