@@ -10,11 +10,9 @@ FeedMind is an AI-enhanced product feedback and analysis platform designed to he
 - 💬 **AI Chatbot with Ollama** – Ask about product pros, cons, or comparisons through an AI-driven assistant.
 - 📝 **Feedback Management** – Add and manage personal reviews alongside scraped data.
 - 📂 **Conversation Categorization** – Group and title conversations like ChatGPT sessions.
-- 📄 **PDF/Image Generation (Optional)** – Convert AI responses into downloadable reports or images.
+- 📄 **PDF Generation** – Convert AI responses into downloadable reports or images.
 - 🧠 **Note Summarization & Tagging** – Automatically summarize scraped or written content with OpenAI.
-- 🔐 **Google OAuth Authentication** – Secure login and registration via Google.
 - 🧑‍💼 **User Dashboard** – View saved products, conversations, and AI outputs.
-- 🔔 **Real-Time Notifications** – Get notified when scraping or AI processing is complete (via WebSockets).
 - 🌐 **Inertia.js + React SPA** – Smooth, modern user experience powered by Laravel and React.
 
 ---
@@ -27,10 +25,8 @@ FeedMind is an AI-enhanced product feedback and analysis platform designed to he
 | Frontend        | React + Inertia.js        |
 | AI Integration  | Ollama (local LLM), OpenAI |
 | Web Scraping    | Node.js + Puppeteer       |
-| Auth            |                           |
+| Auth            | Laravel Sanctum           |
 | Database        | SQLite                     |
 
 ---
-
-## 📁 Project Structure
 
