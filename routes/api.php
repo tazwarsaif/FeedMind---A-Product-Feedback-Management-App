@@ -29,10 +29,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
 });
 
-// Route::post("/chat", [ChatController::class,'message']);
+
 Route::post('/scrape', ScrapeController::class);
 
 Route::middleware('auth:sanctum')->group(function () {
+    Route::post("/ai-scrape", [ChatController::class,'message']);
     Route::get('/chat', [ChatController::class, 'index']);
     Route::post('/chat/start', [ChatController::class, 'startConversation']);
     Route::post('/chat/message', [ChatController::class, 'sendMessage']);

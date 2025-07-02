@@ -89,47 +89,58 @@ class ChatController extends Controller
 
     public function sendMessage(Request $request)
     {
-        $request->validate([
+        try {
+            $request->validate([
             'conversation_id' => 'required|exists:conversations,id',
             'prompt' => 'required|string',
-        ]);
-        $user = Auth::user();
-        $conversation = Conversation::where('user_id', $user->id)->findOrFail($request->conversation_id);
+            ]);
+            $user = Auth::user();
+            $conversation = Conversation::where('user_id', $user->id)->findOrFail($request->conversation_id);
 
-        // Save user message
-        $userMsg = $conversation->messages()->create([
+            // Save user message
+            $userMsg = $conversation->messages()->create([
             'sender' => 'user',
             'content' => $request->prompt,
-        ]);
+            ]);
 
-        // Fetch chat history for context (optional)
-        $chatHistory = $conversation->messages()->orderBy('created_at')->get();
+            // Fetch chat history for context (optional)
+            $chatHistory = $conversation->messages()->orderBy('created_at')->get();
 
-        $formattedMessages = $chatHistory->map(function ($msg) {
+            $formattedMessages = $chatHistory->map(function ($msg) {
             return [
                 'role' => $msg->sender === 'user' ? 'user' : 'assistant',
                 'content' => $msg->content,
             ];
-        });
+            });
 
-        // Call Ollama API
-        $response = Http::post('http://localhost:11434/api/chat', [
+            // Call Ollama API
+            $response = Http::post('http://localhost:11434/api/chat', [
             'model' => 'llama3.2',
             'messages' => $formattedMessages->toArray(),
             'stream' => false,
-        ]);
+            ]);
 
-        $aiReply = $response->json()['message']['content'] ?? 'Sorry, I couldn\'t generate a response.';
+            $aiReply = $response->json()['message']['content'] ?? 'Sorry, I couldn\'t generate a response.';
 
-        // Save bot message
-        $botMsg = $conversation->messages()->create([
+            // Save bot message
+            $botMsg = $conversation->messages()->create([
             'sender' => 'bot',
             'content' => $aiReply,
-        ]);
+            ]);
 
-        return response()->json([
+            return response()->json([
             'userMessage' => $userMsg,
             'botMessage' => $botMsg,
-        ]);
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['error' => $e->errors()], 422);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json(['error' => 'Conversation not found'], 404);
+        } catch (\Illuminate\Http\Client\RequestException $e) {
+            return response()->json(['error' => 'Failed to connect to AI service'], 502);
+        } catch (\Throwable $e) {
+            Log::error('Error in sendMessage: ' . $e->getMessage(), ['exception' => $e]);
+            return response()->json(['error' => 'An unexpected error occurred'], 500);
+        }
     }
 }

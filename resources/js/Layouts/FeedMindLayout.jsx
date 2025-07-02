@@ -1,7 +1,8 @@
+import { usePage } from "@inertiajs/react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
-
 const FeedMindLayout = ({ children, user }) => {
+    const { url } = usePage();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
     const [isAnalyticsDropdownOpen, setIsAnalyticsDropdownOpen] =
@@ -10,6 +11,7 @@ const FeedMindLayout = ({ children, user }) => {
     const fullText = "FeedMind";
     const [convTitle, setConvTitle] = useState("");
     const [slicedConvo, setConvoList] = useState([]);
+
     useEffect(() => {
         if (user?.conversations && Array.isArray(user.conversations)) {
             if (user.conversations.length > 5) {
@@ -17,6 +19,7 @@ const FeedMindLayout = ({ children, user }) => {
             } else {
                 setConvoList(user.conversations);
             }
+            console.log(slicedConvo);
         }
     }, [user]);
 
@@ -168,7 +171,7 @@ const FeedMindLayout = ({ children, user }) => {
             ],
         },
         {
-            name: "AI Assistant",
+            name: "Amazon Scrape",
             icon: (
                 // AI/brain style SVG
                 <svg
@@ -191,7 +194,7 @@ const FeedMindLayout = ({ children, user }) => {
                     />
                 </svg>
             ),
-            href: "/ai-assistant",
+            href: "/amazon-scrape",
         },
         {
             name: "Settings",
@@ -483,8 +486,59 @@ const FeedMindLayout = ({ children, user }) => {
                                                                         className="flex space-x-3"
                                                                     >
                                                                         {/* if there is a button in form, it will close the modal */}
-                                                                        <button className="btn bg-violet-300 border-purple-400 hover:text-white hover:bg-[#39344a]">
-                                                                            Add
+                                                                        <button
+                                                                            className="btn bg-violet-300 border-purple-400 hover:text-white hover:bg-[#39344a]"
+                                                                            onClick={() => {
+                                                                                fetch(
+                                                                                    "http://127.0.0.1:8000/api/chat/start",
+                                                                                    {
+                                                                                        method: "POST",
+                                                                                        headers:
+                                                                                            {
+                                                                                                "Content-Type":
+                                                                                                    "application/json",
+                                                                                                Authorization: `Bearer ${localStorage.getItem(
+                                                                                                    "token"
+                                                                                                )}`,
+                                                                                            },
+                                                                                        body: JSON.stringify(
+                                                                                            {
+                                                                                                title: convTitle,
+                                                                                            }
+                                                                                        ),
+                                                                                    }
+                                                                                )
+                                                                                    .then(
+                                                                                        (
+                                                                                            res
+                                                                                        ) =>
+                                                                                            res.json()
+                                                                                    )
+                                                                                    .then(
+                                                                                        (
+                                                                                            data
+                                                                                        ) => {
+                                                                                            if (
+                                                                                                data &&
+                                                                                                data.id
+                                                                                            ) {
+                                                                                                window.location.href = `/feedgpt/${data.id}`;
+                                                                                            }
+                                                                                        }
+                                                                                    )
+                                                                                    .catch(
+                                                                                        (
+                                                                                            err
+                                                                                        ) => {
+                                                                                            console.error(
+                                                                                                "Failed to start conversation:",
+                                                                                                err
+                                                                                            );
+                                                                                        }
+                                                                                    );
+                                                                            }}
+                                                                        >
+                                                                            Start
                                                                             Conversation
                                                                         </button>
                                                                         <button className="btn ">
@@ -503,8 +557,13 @@ const FeedMindLayout = ({ children, user }) => {
                                                                     key={
                                                                         itemIndex
                                                                     }
-                                                                    href={`/conversation/${item.id}`}
-                                                                    className="flex items-center px-3 py-2 text-sm text-gray-400 hover:text-white hover:bg-[#39344a] rounded-lg transition-colors"
+                                                                    href={`/feedgpt/${item.id}`}
+                                                                    className={`flex items-center px-3 py-2 text-sm rounded-lg transition-colors ${
+                                                                        url ===
+                                                                        item.href
+                                                                            ? "bg-[#39344a] text-white"
+                                                                            : "text-gray-400 hover:text-white hover:bg-[#39344a]"
+                                                                    }`}
                                                                 >
                                                                     {item.title}
                                                                 </a>
@@ -517,10 +576,10 @@ const FeedMindLayout = ({ children, user }) => {
                                     ) : (
                                         <a
                                             href={link.href}
-                                            className={`flex items-center space-x-3 px-3 py-2 text-gray-300 hover:text-white hover:bg-[#39344a] rounded-lg transition-colors group ${
-                                                link.active
+                                            className={`flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors group ${
+                                                url === link.href
                                                     ? "bg-[#39344a] text-white"
-                                                    : ""
+                                                    : "text-gray-300 hover:text-white hover:bg-[#39344a]"
                                             }`}
                                         >
                                             {link.icon}

@@ -18,4 +18,8 @@ class GeneralController extends Controller
         //dd($request->user());
         return inertia("Dashboard");
     }
+    public function feedGPTView() {
+        //dd($request->user());
+        return inertia("ChatPage");
+    }
 }
