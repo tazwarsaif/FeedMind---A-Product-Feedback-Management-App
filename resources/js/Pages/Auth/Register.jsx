@@ -96,6 +96,15 @@ const Register = () => {
 
         return errors;
     };
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCurrentImageIndex((prevIndex) =>
+                prevIndex === images.length - 1 ? 0 : prevIndex + 1
+            );
+        }, 4000); // Change slide every 4 seconds
+
+        return () => clearInterval(interval);
+    }, [images.length]);
 
     const handleSubmit = async (event) => {
         event.preventDefault();

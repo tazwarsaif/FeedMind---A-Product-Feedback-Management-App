@@ -1,6 +1,7 @@
 import { router } from "@inertiajs/react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
+
 function Login() {
     const [mail, setMail] = useState("");
     const [password, setPassword] = useState("");
@@ -40,6 +41,17 @@ function Login() {
     const fullText = "FeedMind";
     const [text2, setText2] = useState("");
     const fullText2 = "A feedback management app";
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCurrentImageIndex((prevIndex) =>
+                prevIndex === images.length - 1 ? 0 : prevIndex + 1
+            );
+        }, 4000); // Change slide every 4 seconds
+
+        return () => clearInterval(interval);
+    }, [images.length]);
+
     useEffect(() => {
         let index = 0;
         const interval = setInterval(() => {
@@ -165,26 +177,6 @@ function Login() {
                                 {text2}
                             </motion.span>
                         </div>
-
-                        {/* <a
-                            href="/"
-                            className="flex items-center space-x-2 text-xs text-gray-200 bg-[#5146a5] px-3 py-1 rounded-full hover:bg-[#6c5dd3] transition"
-                        >
-                            <span>Back to website</span>
-                            <svg
-                                width="16"
-                                height="16"
-                                fill="none"
-                                stroke="currentColor"
-                            >
-                                <path
-                                    d="M5 8h6M9 6l2 2-2 2"
-                                    strokeWidth="2"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                />
-                            </svg>
-                        </a> */}
                     </div>
 
                     {/* Image Slider */}
@@ -338,13 +330,6 @@ function Login() {
                             </div>
                         </div>
                         <div className="flex items-center justify-between">
-                            {/* <label className="flex items-center text-gray-400 text-sm">
-                                <input
-                                    type="checkbox"
-                                    className="mr-2 accent-[#a892fe]"
-                                />
-                                Remember me
-                            </label> */}
                             <a
                                 href="#"
                                 className="text-sm text-[#a892fe] hover:underline"
