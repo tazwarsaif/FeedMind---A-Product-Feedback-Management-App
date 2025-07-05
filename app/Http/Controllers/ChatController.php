@@ -64,9 +64,7 @@ class ChatController extends Controller
     public function index()
     {
         $conversations = Auth::user()->conversations()->latest()->get();
-        return Inertia::render('Chat/Index', [
-            'conversations' => $conversations
-        ]);
+        return response()->json(["Conversation"=>$conversations]);
     }
 
     public function startConversation(Request $request)
@@ -85,6 +83,20 @@ class ChatController extends Controller
     {
         $conversation = Conversation::with('messages')->where('user_id', Auth::user()->id)->findOrFail($id);
         return response()->json($conversation);
+    }
+    public function getConversationSummary($id)
+    {
+        $conversation = Conversation::with('messages')->where('user_id', Auth::user()->id)->findOrFail($id);
+        $aiPrompt = json_encode($conversation) .
+                "\n\nSummarize the whole conversation, read the messages and tell a brief and concise summarization, don't have to include the id and timestamps.";
+
+        $ollamaResponse = Http::timeout(120)->post('http://localhost:11434/api/generate', [
+                'model' => 'llama3.2',
+                'prompt' => $aiPrompt,
+                'stream' => false,
+        ]);
+        $aiData = $ollamaResponse->json();
+        return response()->json($aiData["response"]);
     }
 
     public function sendMessage(Request $request)

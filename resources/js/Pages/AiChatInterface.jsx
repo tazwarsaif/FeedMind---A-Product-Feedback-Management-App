@@ -3,6 +3,48 @@ import { useEffect, useRef, useState } from "react";
 
 const AIChatInterface = ({ conversation }) => {
     // Prepare initial messages from conversation prop, fallback to default
+    const token = localStorage.getItem("token");
+    if (conversation === null) {
+        const [conversation, setConversation] = useState(null);
+        const pathname = window.location.pathname; // "/feedgpt/2"
+        const parts = pathname.split("/");
+        const conversationId = parts[2];
+        useEffect(() => {
+            if (!token || !conversationId) return;
+
+            const fetchConversation = async () => {
+                try {
+                    const response = await fetch(
+                        `http://127.0.0.1:8000/api/chat/conversation/${conversationId}`,
+                        {
+                            headers: {
+                                Authorization: `Bearer ${token}`,
+                            },
+                        }
+                    );
+                    if (response.ok) {
+                        const data = await response.json();
+                        setConversation(data);
+                    } else {
+                        setConversation(null);
+                    }
+                } catch (error) {
+                    setConversation(null);
+                }
+            };
+            while (true) {
+                if (conversation !== null) {
+                    break;
+                }
+                fetchConversation();
+            }
+        }, [token, conversationId]);
+        if (conversation === null) {
+            window.location.reload();
+        }
+    }
+    const [summary, setSummary] = useState("");
+    const [summaryLoad, setSummaryLoad] = useState(false);
     const getInitialMessages = () => {
         if (
             conversation &&
@@ -34,7 +76,7 @@ const AIChatInterface = ({ conversation }) => {
     );
     const [isTyping, setIsTyping] = useState(false);
     const messagesEndRef = useRef(null);
-    const token = localStorage.getItem("token");
+
     // Update messages if conversation prop changes
     useEffect(() => {
         setMessages(getInitialMessages());
@@ -136,26 +178,99 @@ const AIChatInterface = ({ conversation }) => {
                     {conversationTitle}
                 </h2>
                 <div className="flex space-x-2">
-                    <button
-                        onClick={handleNewConversation}
-                        className="p-2 rounded-lg hover:bg-[#4a4458] transition-colors text-gray-300 hover:text-white"
-                        title="New chat"
+                    <div
+                        onClick={() =>
+                            document
+                                .getElementById(
+                                    `summary_modal_${conversation.id}`
+                                )
+                                .showModal()
+                        }
+                        className="bg-blue-600 hover:bg-blue-700 p-2 px-3  text-white rounded-lg cursor-pointer"
                     >
                         <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-5 w-5"
+                            className="w-6 h-6 text-white-400"
                             fill="none"
-                            viewBox="0 0 24 24"
                             stroke="currentColor"
+                            viewBox="0 0 24 24"
                         >
                             <path
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
                                 strokeWidth={2}
-                                d="M12 4v16m8-8H4"
+                                d="M7 4h10a2 2 0 012 2v12a2 2 0 01-2 2H7a2 2 0 01-2-2V6a2 2 0 012-2z"
+                            />
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M16 2v4M8 2v4"
                             />
                         </svg>
-                    </button>
+                        <dialog
+                            id={`summary_modal_${conversation.id}`}
+                            className="modal modal-bottom sm:modal-middle"
+                        >
+                            <div className="modal-box bg-[#39344a] text-white">
+                                <h3 className="font-bold text-lg">
+                                    Summarization of the Conversation
+                                </h3>
+                                {summary === "" && summaryLoad === false && (
+                                    <div>click generate summary</div>
+                                )}
+                                {summary === "" && summaryLoad === true && (
+                                    <span className="loading loading-bars loading-xl"></span>
+                                )}
+                                {summary !== "" && summaryLoad === false && (
+                                    <div>{summary}</div>
+                                )}
+                                <div className="modal-action">
+                                    <button
+                                        className="btn bg-violet-300 border-purple-400 hover:text-white hover:bg-[#39344a]"
+                                        onClick={() => {
+                                            setSummaryLoad(true);
+                                            fetch(
+                                                `http://127.0.0.1:8000/api/chat/conversation/${conversation.id}/summary`,
+                                                {
+                                                    method: "Get",
+                                                    headers: {
+                                                        "Content-Type":
+                                                            "application/json",
+                                                        Authorization: `Bearer ${localStorage.getItem(
+                                                            "token"
+                                                        )}`,
+                                                    },
+                                                }
+                                            )
+                                                .then((res) => res.json())
+                                                .then((data) => {
+                                                    setSummary(data);
+                                                    setSummaryLoad(false);
+                                                    console.log(data);
+                                                })
+                                                .catch((err) => {
+                                                    setSummaryLoad(false);
+                                                    console.error(
+                                                        "Failed to start conversation:",
+                                                        err
+                                                    );
+                                                });
+                                        }}
+                                    >
+                                        Generate Summary
+                                    </button>
+                                    <form
+                                        method="dialog"
+                                        className="flex space-x-3"
+                                    >
+                                        {/* if there is a button in form, it will close the modal */}
+
+                                        <button className="btn ">Close</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </dialog>
+                    </div>
                 </div>
             </div>
 

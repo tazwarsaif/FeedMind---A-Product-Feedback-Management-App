@@ -37,9 +37,6 @@ const ChatPage = () => {
         };
 
         fetchUser();
-    }, [token]);
-    // Fetch conversation data
-    useEffect(() => {
         if (!token || !conversationId) return;
 
         const fetchConversation = async () => {
@@ -65,6 +62,33 @@ const ChatPage = () => {
 
         fetchConversation();
     }, [token, conversationId]);
+    // Fetch conversation data
+    // useEffect(() => {
+    //     if (!token || !conversationId) return;
+
+    //     const fetchConversation = async () => {
+    //         try {
+    //             const response = await fetch(
+    //                 `http://127.0.0.1:8000/api/chat/conversation/${conversationId}`,
+    //                 {
+    //                     headers: {
+    //                         Authorization: `Bearer ${token}`,
+    //                     },
+    //                 }
+    //             );
+    //             if (response.ok) {
+    //                 const data = await response.json();
+    //                 setConversation(data);
+    //             } else {
+    //                 setConversation(null);
+    //             }
+    //         } catch (error) {
+    //             setConversation(null);
+    //         }
+    //     };
+
+    //     fetchConversation();
+    // }, [token, conversationId]);
 
     // ... rest of your loading and error UI ...
 

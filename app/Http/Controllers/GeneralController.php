@@ -22,4 +22,8 @@ class GeneralController extends Controller
         //dd($request->user());
         return inertia("ChatPage");
     }
+    public function getConversationsView() {
+        //dd($request->user());
+        return inertia("Conversations");
+    }
 }

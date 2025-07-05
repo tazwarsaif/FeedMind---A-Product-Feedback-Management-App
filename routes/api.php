@@ -38,4 +38,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/chat/start', [ChatController::class, 'startConversation']);
     Route::post('/chat/message', [ChatController::class, 'sendMessage']);
     Route::get('/chat/conversation/{id}', [ChatController::class, 'getConversation']);
+    Route::get('/chat/conversation/{id}/summary', [ChatController::class, 'getConversationSummary']);
 });
