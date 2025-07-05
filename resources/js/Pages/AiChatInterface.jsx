@@ -4,58 +4,19 @@ import { useEffect, useRef, useState } from "react";
 const AIChatInterface = ({ conversation }) => {
     // Prepare initial messages from conversation prop, fallback to default
     const token = localStorage.getItem("token");
-    if (conversation === null) {
-        const [conversation, setConversation] = useState(null);
-        const pathname = window.location.pathname; // "/feedgpt/2"
-        const parts = pathname.split("/");
-        const conversationId = parts[2];
-        useEffect(() => {
-            if (!token || !conversationId) return;
-
-            const fetchConversation = async () => {
-                try {
-                    const response = await fetch(
-                        `http://127.0.0.1:8000/api/chat/conversation/${conversationId}`,
-                        {
-                            headers: {
-                                Authorization: `Bearer ${token}`,
-                            },
-                        }
-                    );
-                    if (response.ok) {
-                        const data = await response.json();
-                        setConversation(data);
-                    } else {
-                        setConversation(null);
-                    }
-                } catch (error) {
-                    setConversation(null);
-                }
-            };
-            while (true) {
-                if (conversation !== null) {
-                    break;
-                }
-                fetchConversation();
-            }
-        }, [token, conversationId]);
-        if (conversation === null) {
-            window.location.reload();
-        }
-    }
     const [summary, setSummary] = useState("");
     const [summaryLoad, setSummaryLoad] = useState(false);
     const getInitialMessages = () => {
         if (
             conversation &&
-            conversation.messages &&
-            conversation.messages.length > 0
+            conversation?.messages &&
+            conversation?.messages.length > 0
         ) {
-            return conversation.messages.map((msg) => ({
-                id: msg.id,
-                content: msg.content,
-                sender: msg.sender, // Should be 'ai' or 'user'
-                timestamp: new Date(msg.created_at), // Adjust if your API uses a different field
+            return conversation?.messages.map((msg) => ({
+                id: msg?.id,
+                content: msg?.content,
+                sender: msg?.sender, // Should be 'ai' or 'user'
+                timestamp: new Date(msg?.created_at), // Adjust if your API uses a different field
             }));
         }
         return [
@@ -182,7 +143,7 @@ const AIChatInterface = ({ conversation }) => {
                         onClick={() =>
                             document
                                 .getElementById(
-                                    `summary_modal_${conversation.id}`
+                                    `summary_modal_${conversation?.id}`
                                 )
                                 .showModal()
                         }
@@ -208,7 +169,7 @@ const AIChatInterface = ({ conversation }) => {
                             />
                         </svg>
                         <dialog
-                            id={`summary_modal_${conversation.id}`}
+                            id={`summary_modal_${conversation?.id}`}
                             className="modal modal-bottom sm:modal-middle"
                         >
                             <div className="modal-box bg-[#39344a] text-white">
@@ -230,7 +191,7 @@ const AIChatInterface = ({ conversation }) => {
                                         onClick={() => {
                                             setSummaryLoad(true);
                                             fetch(
-                                                `http://127.0.0.1:8000/api/chat/conversation/${conversation.id}/summary`,
+                                                `http://127.0.0.1:8000/api/chat/conversation/${conversation?.id}/summary`,
                                                 {
                                                     method: "Get",
                                                     headers: {
@@ -278,32 +239,32 @@ const AIChatInterface = ({ conversation }) => {
             <div className="flex-1 overflow-y-auto p-4 space-y-6">
                 {messages.map((message) => (
                     <div
-                        key={message.id}
+                        key={message?.id}
                         className={`flex ${
-                            message.sender === "user"
+                            message?.sender === "user"
                                 ? "justify-end"
                                 : "justify-start"
                         }`}
                     >
                         <div
                             className={`max-w-3xl rounded-lg px-4 py-3 ${
-                                message.sender === "user"
+                                message?.sender === "user"
                                     ? "bg-[#a892fe] text-white"
                                     : "bg-[#4a4458] text-gray-200"
                             }`}
                         >
                             <div className="flex items-start space-x-2">
-                                {message.sender === "ai" && (
+                                {message?.sender === "ai" && (
                                     <div className="flex-shrink-0 w-6 h-6 rounded-full bg-gradient-to-r from-purple-400 to-blue-500 flex items-center justify-center text-xs font-bold text-white">
                                         AI
                                     </div>
                                 )}
                                 <div className="flex-1">
                                     <div className="whitespace-pre-wrap">
-                                        {message.content}
+                                        {message?.content}
                                     </div>
                                     <div className="text-xs mt-1 opacity-70">
-                                        {message.timestamp.toLocaleTimeString(
+                                        {message?.timestamp.toLocaleTimeString(
                                             [],
                                             {
                                                 hour: "2-digit",
@@ -312,7 +273,7 @@ const AIChatInterface = ({ conversation }) => {
                                         )}
                                     </div>
                                 </div>
-                                {message.sender === "user" && (
+                                {message?.sender === "user" && (
                                     <div className="flex-shrink-0 w-6 h-6 rounded-full bg-gradient-to-r from-purple-600 to-pink-500 flex items-center justify-center text-xs font-bold text-white">
                                         Y
                                     </div>
