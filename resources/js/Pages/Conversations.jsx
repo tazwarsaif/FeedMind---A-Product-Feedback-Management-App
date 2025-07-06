@@ -101,7 +101,7 @@ const Conversations = () => {
                                 >
                                     <a
                                         href={`/feedgpt/${conv.id}`}
-                                        className="text-purple-300 w-30 md:w-full text-2xl text-wrap break-words"
+                                        className="text-purple-300 w-25 md:w-full text-2xl text-wrap break-words"
                                     >
                                         {conv.title}
                                     </a>
@@ -110,7 +110,9 @@ const Conversations = () => {
                                     <div
                                         onClick={() =>
                                             document
-                                                .getElementById("my_modal_5")
+                                                .getElementById(
+                                                    `summary_modal_${conv?.id}`
+                                                )
                                                 .showModal()
                                         }
                                         className="bg-blue-600 hover:bg-blue-700 p-2 px-3  text-white rounded-lg"
@@ -135,7 +137,7 @@ const Conversations = () => {
                                             />
                                         </svg>
                                         <dialog
-                                            id={`summary_modal_${conv.id}`}
+                                            id={`summary_modal_${conv?.id}`}
                                             className="modal modal-bottom sm:modal-middle"
                                         >
                                             <div className="modal-box bg-[#39344a] text-white">

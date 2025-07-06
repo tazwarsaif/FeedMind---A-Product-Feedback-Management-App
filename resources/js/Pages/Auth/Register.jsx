@@ -37,24 +37,30 @@ const Register = () => {
     const images = [
         {
             id: 1,
+            url: "/d2b4e5b0eebea57b53182974d8b0c8f2.gif",
+            title: "Amazon AI Scrapping",
+            subtitle: "Analying Amazon Products.",
+        },
+        {
+            id: 2,
             url: "/probability.jpg",
             title: "AI Assistant",
             subtitle: "AI can help to analyze product feedback.",
         },
         {
-            id: 2,
+            id: 3,
             url: "/review.jpg",
             title: "Review",
             subtitle: "Users can add reviews to product.",
         },
         {
-            id: 3,
+            id: 4,
             url: "/aihelp.jpg",
             title: "Choose The Best",
             subtitle: "Users can choose the best for him/her.",
         },
         {
-            id: 4,
+            id: 5,
             url: "/analyze.png",
             title: "Analyzing One Product",
             subtitle:
@@ -140,7 +146,7 @@ const Register = () => {
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-[#39344a] px-4">
-            <div className="flex w-full max-w-4xl bg-[#28243c] rounded-2xl shadow-2xl overflow-hidden">
+            <div className="flex w-full max-w-6xl bg-[#28243c] rounded-2xl shadow-2xl overflow-hidden">
                 {/* Left: Image & Branding */}
                 <div className="hidden md:flex flex-col justify-between w-1/2 bg-[#2c2841] p-8 rounded-l-2xl relative overflow-hidden">
                     <div className="flex justify-between items-center z-10">
