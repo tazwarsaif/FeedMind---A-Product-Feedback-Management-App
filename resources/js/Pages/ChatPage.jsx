@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import FeedMindLayout from "../Layouts/FeedMindLayout";
+import Header from "../Layouts/Header";
 import AIChatInterface from "./AiChatInterface";
 const ChatPage = () => {
     const token = localStorage.getItem("token");
@@ -138,9 +139,12 @@ const ChatPage = () => {
     };
 
     return (
-        <FeedMindLayout user={user}>
-            <AIChatInterface conversation={conversation} />
-        </FeedMindLayout>
+        <>
+            <Header title={"FeedGPT"} />
+            <FeedMindLayout user={user}>
+                <AIChatInterface conversation={conversation} />
+            </FeedMindLayout>
+        </>
     );
 };
 

@@ -6,6 +6,7 @@ use Inertia\Inertia;
 
 // routes/web.php
 use App\Http\Controllers\ChatController;
+use Illuminate\Support\Facades\Redirect;
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
@@ -16,7 +17,7 @@ Route::middleware(['auth'])->group(function () {
 
 
 Route::get('/', function () {
-    return Inertia::render("Home");
+    return Redirect::route('dashboard');;
 });
 
 // Route::get('/chat', function () {
