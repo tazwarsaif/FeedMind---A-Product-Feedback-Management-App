@@ -1,10 +1,9 @@
-// resources/js/Pages/ScrapePage.jsx
 import axios from "axios";
 import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import FeedMindLayout from "../Layouts/FeedMindLayout";
 import Header from "../Layouts/Header";
-export default function ScrapePage() {
+const ScrapePage = () => {
     const [url, setUrl] = useState("");
     const [result, setResult] = useState(null);
     const [user, setUser] = useState(null);
@@ -107,7 +106,7 @@ export default function ScrapePage() {
         <>
             <Header title={"Amazon Scrapper"} />
             <FeedMindLayout user={user}>
-                <div className="p-6 text-purple-300">
+                <div className="p-6 text-slate-300">
                     <h1 className="text-2xl font-bold mb-4">Scrape Product</h1>
                     <input
                         type="text"
@@ -119,7 +118,7 @@ export default function ScrapePage() {
                     {!scrapeLoading && (
                         <button
                             onClick={handleScrape}
-                            className="bg-purple-300 text-purple-800 px-4 py-2 mt-2"
+                            className="bg-slate-300 flex items-center px-3 py-2 text-sm text-purple-800 hover:text-white hover:bg-[#625880] rounded-lg transition-colors cursor-pointer mt-3"
                         >
                             Scrape
                         </button>
@@ -127,7 +126,7 @@ export default function ScrapePage() {
                     {scrapeLoading && (
                         <button
                             onClick={handleScrape}
-                            className="bg-purple-300 text-purple-800 px-4 py-2 mt-2"
+                            className="bg-slate-300 flex items-center px-3 py-2 text-sm text-purple-800 hover:text-white hover:bg-[#625880] rounded-lg transition-colors cursor-pointer mt-3"
                         >
                             <span className="loading loading-dots loading-md text-purple-800"></span>
                         </button>
@@ -211,4 +210,6 @@ export default function ScrapePage() {
             </FeedMindLayout>
         </>
     );
-}
+};
+
+export default ScrapePage;

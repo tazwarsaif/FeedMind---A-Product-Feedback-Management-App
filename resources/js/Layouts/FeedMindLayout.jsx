@@ -424,152 +424,197 @@ const FeedMindLayout = ({ children, user }) => {
                                             </button>
                                             <AnimatePresence>
                                                 {isAnalyticsDropdownOpen && (
-                                                    <motion.div
-                                                        initial={{
-                                                            opacity: 0,
-                                                            height: 0,
-                                                        }}
-                                                        animate={{
-                                                            opacity: 1,
-                                                            height: "auto",
-                                                        }}
-                                                        exit={{
-                                                            opacity: 0,
-                                                            height: 0,
-                                                        }}
-                                                        transition={{
-                                                            duration: 0.2,
-                                                        }}
-                                                        className="ml-6 mt-2 space-y-1"
-                                                    >
-                                                        <button
-                                                            className="bg-slate-300 flex items-center px-3 py-2 text-sm text-purple-800 hover:text-white hover:bg-[#39344a] rounded-lg transition-colors cursor-pointer w-full"
-                                                            onClick={() =>
-                                                                document
-                                                                    .getElementById(
-                                                                        "my_modal_5"
-                                                                    )
-                                                                    .showModal()
-                                                            }
+                                                    <>
+                                                        <motion.div
+                                                            initial={{
+                                                                opacity: 0,
+                                                                height: 0,
+                                                            }}
+                                                            animate={{
+                                                                opacity: 1,
+                                                                height: "auto",
+                                                            }}
+                                                            exit={{
+                                                                opacity: 0,
+                                                                height: 0,
+                                                            }}
+                                                            transition={{
+                                                                duration: 0.2,
+                                                            }}
+                                                            className="ml-6 mt-2 space-y-1"
                                                         >
-                                                            + Add Conversation
-                                                        </button>
-                                                        <dialog
-                                                            id="my_modal_5"
-                                                            className="modal modal-bottom sm:modal-middle"
-                                                        >
-                                                            <div className="modal-box bg-[#39344a] text-white">
-                                                                <h3 className="font-bold text-lg">
-                                                                    Title of the
-                                                                    Conversation
-                                                                </h3>
-                                                                <input
-                                                                    type="text"
-                                                                    placeholder="Enter title"
-                                                                    value={
-                                                                        convTitle
-                                                                    }
-                                                                    className="input input-bordered w-full text-black mt-3"
-                                                                    onChange={(
-                                                                        e
-                                                                    ) =>
-                                                                        setConvTitle(
-                                                                            e
-                                                                                .target
-                                                                                .value
-                                                                        )
-                                                                    }
-                                                                />
-                                                                <div className="modal-action">
-                                                                    <form
-                                                                        method="dialog"
-                                                                        className="flex space-x-3"
-                                                                    >
-                                                                        {/* if there is a button in form, it will close the modal */}
-                                                                        <button
-                                                                            className="btn bg-violet-300 border-purple-400 hover:text-white hover:bg-[#39344a]"
-                                                                            onClick={() => {
-                                                                                fetch(
-                                                                                    "http://127.0.0.1:8000/api/chat/start",
-                                                                                    {
-                                                                                        method: "POST",
-                                                                                        headers:
-                                                                                            {
-                                                                                                "Content-Type":
-                                                                                                    "application/json",
-                                                                                                Authorization: `Bearer ${localStorage.getItem(
-                                                                                                    "token"
-                                                                                                )}`,
-                                                                                            },
-                                                                                        body: JSON.stringify(
-                                                                                            {
-                                                                                                title: convTitle,
-                                                                                            }
-                                                                                        ),
-                                                                                    }
+                                                            <div className="flex flex-col space-y-3">
+                                                                <div>
+                                                                    <button
+                                                                        className="bg-slate-300 flex items-center px-3 py-2 text-sm text-purple-800 hover:text-white hover:bg-[#39344a] rounded-lg transition-colors cursor-pointer w-full"
+                                                                        onClick={() =>
+                                                                            document
+                                                                                .getElementById(
+                                                                                    "my_modal_5"
                                                                                 )
-                                                                                    .then(
-                                                                                        (
-                                                                                            res
-                                                                                        ) =>
-                                                                                            res.json()
-                                                                                    )
-                                                                                    .then(
-                                                                                        (
-                                                                                            data
-                                                                                        ) => {
-                                                                                            if (
-                                                                                                data &&
-                                                                                                data.id
-                                                                                            ) {
-                                                                                                window.location.href = `/feedgpt/${data.id}`;
-                                                                                            }
-                                                                                        }
-                                                                                    )
-                                                                                    .catch(
-                                                                                        (
-                                                                                            err
-                                                                                        ) => {
-                                                                                            console.error(
-                                                                                                "Failed to start conversation:",
-                                                                                                err
-                                                                                            );
-                                                                                        }
-                                                                                    );
-                                                                            }}
+                                                                                .showModal()
+                                                                        }
+                                                                    >
+                                                                        <svg
+                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                            className="h-5 w-5 mr-2"
+                                                                            viewBox="0 0 20 20"
+                                                                            fill="currentColor"
                                                                         >
-                                                                            Start
-                                                                            Conversation
-                                                                        </button>
-                                                                        <button className="btn ">
-                                                                            Close
-                                                                        </button>
-                                                                    </form>
+                                                                            <path
+                                                                                fillRule="evenodd"
+                                                                                d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                                                                                clipRule="evenodd"
+                                                                            />
+                                                                        </svg>
+                                                                        Add
+                                                                        Conversation
+                                                                    </button>
+                                                                    <dialog
+                                                                        id="my_modal_5"
+                                                                        className="modal modal-bottom sm:modal-middle"
+                                                                    >
+                                                                        <div className="modal-box bg-[#39344a] text-white">
+                                                                            <h3 className="font-bold text-lg">
+                                                                                Title
+                                                                                of
+                                                                                the
+                                                                                Conversation
+                                                                            </h3>
+                                                                            <input
+                                                                                type="text"
+                                                                                placeholder="Enter title"
+                                                                                value={
+                                                                                    convTitle
+                                                                                }
+                                                                                className="input input-bordered w-full text-black mt-3"
+                                                                                onChange={(
+                                                                                    e
+                                                                                ) =>
+                                                                                    setConvTitle(
+                                                                                        e
+                                                                                            .target
+                                                                                            .value
+                                                                                    )
+                                                                                }
+                                                                            />
+                                                                            <div className="modal-action">
+                                                                                <form
+                                                                                    method="dialog"
+                                                                                    className="flex space-x-3"
+                                                                                >
+                                                                                    {/* if there is a button in form, it will close the modal */}
+                                                                                    <button
+                                                                                        className="btn bg-violet-300 border-purple-400 hover:text-white hover:bg-[#39344a]"
+                                                                                        onClick={() => {
+                                                                                            fetch(
+                                                                                                "http://127.0.0.1:8000/api/chat/start",
+                                                                                                {
+                                                                                                    method: "POST",
+                                                                                                    headers:
+                                                                                                        {
+                                                                                                            "Content-Type":
+                                                                                                                "application/json",
+                                                                                                            Authorization: `Bearer ${localStorage.getItem(
+                                                                                                                "token"
+                                                                                                            )}`,
+                                                                                                        },
+                                                                                                    body: JSON.stringify(
+                                                                                                        {
+                                                                                                            title: convTitle,
+                                                                                                        }
+                                                                                                    ),
+                                                                                                }
+                                                                                            )
+                                                                                                .then(
+                                                                                                    (
+                                                                                                        res
+                                                                                                    ) =>
+                                                                                                        res.json()
+                                                                                                )
+                                                                                                .then(
+                                                                                                    (
+                                                                                                        data
+                                                                                                    ) => {
+                                                                                                        if (
+                                                                                                            data &&
+                                                                                                            data.id
+                                                                                                        ) {
+                                                                                                            window.location.href = `/feedgpt/${data.id}`;
+                                                                                                        }
+                                                                                                    }
+                                                                                                )
+                                                                                                .catch(
+                                                                                                    (
+                                                                                                        err
+                                                                                                    ) => {
+                                                                                                        console.error(
+                                                                                                            "Failed to start conversation:",
+                                                                                                            err
+                                                                                                        );
+                                                                                                    }
+                                                                                                );
+                                                                                        }}
+                                                                                    >
+                                                                                        Start
+                                                                                        Conversation
+                                                                                    </button>
+                                                                                    <button className="btn ">
+                                                                                        Close
+                                                                                    </button>
+                                                                                </form>
+                                                                            </div>
+                                                                        </div>
+                                                                    </dialog>
                                                                 </div>
                                                             </div>
-                                                        </dialog>
-                                                        {slicedConvo.map(
-                                                            (
-                                                                item,
-                                                                itemIndex
-                                                            ) => (
-                                                                <a
-                                                                    key={
-                                                                        itemIndex
+
+                                                            {slicedConvo.map(
+                                                                (
+                                                                    item,
+                                                                    itemIndex
+                                                                ) => (
+                                                                    <a
+                                                                        key={
+                                                                            itemIndex
+                                                                        }
+                                                                        href={`/feedgpt/${item.id}`}
+                                                                        className={`flex items-center px-3 py-2 text-sm rounded-lg transition-colors ${
+                                                                            url ===
+                                                                            item.href
+                                                                                ? "bg-[#39344a] text-white"
+                                                                                : "text-gray-400 hover:text-white hover:bg-[#39344a]"
+                                                                        }`}
+                                                                    >
+                                                                        {
+                                                                            item.title
+                                                                        }
+                                                                    </a>
+                                                                )
+                                                            )}
+                                                            <div>
+                                                                <button
+                                                                    className="flex items-center px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-[#39344a] rounded-lg transition-colors cursor-pointer w-full"
+                                                                    onClick={() =>
+                                                                        (window.location.href =
+                                                                            "/conversations")
                                                                     }
-                                                                    href={`/feedgpt/${item.id}`}
-                                                                    className={`flex items-center px-3 py-2 text-sm rounded-lg transition-colors ${
-                                                                        url ===
-                                                                        item.href
-                                                                            ? "bg-[#39344a] text-white"
-                                                                            : "text-gray-400 hover:text-white hover:bg-[#39344a]"
-                                                                    }`}
                                                                 >
-                                                                    {item.title}
-                                                                </a>
-                                                            )
-                                                        )}
-                                                    </motion.div>
+                                                                    <svg
+                                                                        xmlns="http://www.w3.org/2000/svg"
+                                                                        className="h-5 w-5 mr-2"
+                                                                        viewBox="0 0 20 20"
+                                                                        fill="currentColor"
+                                                                    >
+                                                                        <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z" />
+                                                                        <path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z" />
+                                                                    </svg>
+                                                                    All
+                                                                    Conversations
+                                                                </button>
+                                                            </div>
+                                                        </motion.div>
+                                                    </>
                                                 )}
                                             </AnimatePresence>
                                         </div>

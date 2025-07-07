@@ -9,6 +9,58 @@ const Conversations = () => {
     const [conversations, setConversations] = useState([]);
     const [loadingConvos, setLoadingConvos] = useState(true);
     const [error, setError] = useState(null);
+    const [summary, setSummary] = useState("");
+    const [summaryLoad, setSummaryLoad] = useState(false);
+    const summaryFetch = async (id) => {
+        setSummaryLoad(true);
+        fetch(`http://127.0.0.1:8000/api/chat/conversation/${id}/summary`, {
+            method: "Get",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+        })
+            .then((res) => res.json())
+            .then((data) => {
+                setSummary(data);
+                setSummaryLoad(false);
+                console.log(data);
+            })
+            .catch((err) => {
+                setSummaryLoad(false);
+                console.error("Failed to start conversation:", err);
+            });
+    };
+    const deleteConversation = async (id) => {
+        try {
+            const response = await axios.post(
+                `/api/delete-conversation/${id}`,
+                { id },
+                {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem(
+                            "token"
+                        )}`,
+                        "Content-Type": "application/json",
+                        Accept: "application/json",
+                    },
+                }
+            );
+            if (response.data.error) {
+                console.log("API Error:", response.data.error);
+                return;
+            }
+            console.log("Success:", response);
+            window.location.reload();
+        } catch (error) {
+            if (error.response) {
+                console.log("Validation or server error:", error);
+                window.alert("Server Error");
+            } else {
+                console.error("Unexpected error:", error);
+            }
+        }
+    };
 
     useEffect(() => {
         // Fetch user info
@@ -116,11 +168,11 @@ const Conversations = () => {
                                             onClick={() =>
                                                 document
                                                     .getElementById(
-                                                        `summary_modal_${conv?.id}`
+                                                        `summary_modal_${conv.id}`
                                                     )
                                                     .showModal()
                                             }
-                                            className="bg-blue-600 hover:bg-blue-700 p-2 px-3  text-white rounded-lg"
+                                            className="bg-blue-600 hover:bg-blue-700 p-2 px-3  text-white rounded-lg cursor-pointer"
                                         >
                                             <svg
                                                 className="w-6 h-6 text-white-400"
@@ -142,7 +194,7 @@ const Conversations = () => {
                                                 />
                                             </svg>
                                             <dialog
-                                                id={`summary_modal_${conv?.id}`}
+                                                id={`summary_modal_${conv.id}`}
                                                 className="modal modal-bottom sm:modal-middle"
                                             >
                                                 <div className="modal-box bg-[#39344a] text-white">
@@ -150,73 +202,43 @@ const Conversations = () => {
                                                         Summarization of the
                                                         Conversation
                                                     </h3>
-                                                    <input
-                                                        type="text"
-                                                        placeholder="Enter title"
-                                                        className="input input-bordered w-full text-black mt-3"
-                                                    />
+                                                    {summary === "" &&
+                                                        summaryLoad ===
+                                                            false && (
+                                                            <div>
+                                                                click generate
+                                                                summary
+                                                            </div>
+                                                        )}
+                                                    {summaryLoad === true && (
+                                                        <span className="loading loading-bars loading-xl"></span>
+                                                    )}
+                                                    {summary !== "" &&
+                                                        summaryLoad ===
+                                                            false && (
+                                                            <div>{summary}</div>
+                                                        )}
                                                     <div className="modal-action">
+                                                        {!summaryLoad && (
+                                                            <button
+                                                                className="btn bg-violet-300 border-purple-400 hover:text-white hover:bg-[#39344a]"
+                                                                onClick={() =>
+                                                                    summaryFetch(
+                                                                        conv.id
+                                                                    )
+                                                                }
+                                                            >
+                                                                Generate Summary
+                                                            </button>
+                                                        )}
+
                                                         <form
                                                             method="dialog"
                                                             className="flex space-x-3"
                                                         >
                                                             {/* if there is a button in form, it will close the modal */}
-                                                            <button
-                                                                className="btn bg-violet-300 border-purple-400 hover:text-white hover:bg-[#39344a]"
-                                                                onClick={() => {
-                                                                    fetch(
-                                                                        "http://127.0.0.1:8000/api/chat/start",
-                                                                        {
-                                                                            method: "POST",
-                                                                            headers:
-                                                                                {
-                                                                                    "Content-Type":
-                                                                                        "application/json",
-                                                                                    Authorization: `Bearer ${localStorage.getItem(
-                                                                                        "token"
-                                                                                    )}`,
-                                                                                },
-                                                                            body: JSON.stringify(
-                                                                                {
-                                                                                    title: convTitle,
-                                                                                }
-                                                                            ),
-                                                                        }
-                                                                    )
-                                                                        .then(
-                                                                            (
-                                                                                res
-                                                                            ) =>
-                                                                                res.json()
-                                                                        )
-                                                                        .then(
-                                                                            (
-                                                                                data
-                                                                            ) => {
-                                                                                if (
-                                                                                    data &&
-                                                                                    data.id
-                                                                                ) {
-                                                                                    window.location.href = `/feedgpt/${data.id}`;
-                                                                                }
-                                                                            }
-                                                                        )
-                                                                        .catch(
-                                                                            (
-                                                                                err
-                                                                            ) => {
-                                                                                console.error(
-                                                                                    "Failed to start conversation:",
-                                                                                    err
-                                                                                );
-                                                                            }
-                                                                        );
-                                                                }}
-                                                            >
-                                                                Start
-                                                                Conversation
-                                                            </button>
-                                                            <button className="btn ">
+
+                                                            <button className="btn">
                                                                 Close
                                                             </button>
                                                         </form>
@@ -224,7 +246,16 @@ const Conversations = () => {
                                                 </div>
                                             </dialog>
                                         </div>
-                                        <div className="bg-red-600 hover:bg-red-700 p-2 px-3  text-white rounded-lg">
+                                        <div
+                                            className="bg-red-600 hover:bg-red-700 p-2 px-3  text-white rounded-lg"
+                                            onClick={() =>
+                                                document
+                                                    .getElementById(
+                                                        `delete_${conv.id}`
+                                                    )
+                                                    .showModal()
+                                            }
+                                        >
                                             <svg
                                                 className="w-5 h-5"
                                                 fill="none"
@@ -239,6 +270,36 @@ const Conversations = () => {
                                                 />
                                             </svg>
                                         </div>
+                                        <dialog
+                                            id={`delete_${conv.id}`}
+                                            className="modal modal-bottom sm:modal-middle"
+                                        >
+                                            <div className="modal-box">
+                                                <h3 className="font-bold text-lg">
+                                                    You sure you want to delete
+                                                    your conversation?
+                                                </h3>
+
+                                                <div className="modal-action">
+                                                    <form method="dialog">
+                                                        {/* if there is a button in form, it will close the modal */}
+                                                        <button className="btn">
+                                                            No
+                                                        </button>
+                                                    </form>
+                                                    <button
+                                                        className="btn btn-error text-white"
+                                                        onClick={(e) =>
+                                                            deleteConversation(
+                                                                conv.id
+                                                            )
+                                                        }
+                                                    >
+                                                        Delete
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </dialog>
                                     </div>
                                 </>
                             </div>

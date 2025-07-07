@@ -2,7 +2,6 @@ import { motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 
 const AIChatInterface = ({ conversation }) => {
-    // Prepare initial messages from conversation prop, fallback to default
     const token = localStorage.getItem("token");
     const [summary, setSummary] = useState("");
     const [summaryLoad, setSummaryLoad] = useState(false);
@@ -37,6 +36,30 @@ const AIChatInterface = ({ conversation }) => {
     );
     const [isTyping, setIsTyping] = useState(false);
     const messagesEndRef = useRef(null);
+
+    const summaryFetch = async () => {
+        setSummaryLoad(true);
+        fetch(
+            `http://127.0.0.1:8000/api/chat/conversation/${conversation?.id}/summary`,
+            {
+                method: "Get",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+            }
+        )
+            .then((res) => res.json())
+            .then((data) => {
+                setSummary(data);
+                setSummaryLoad(false);
+                console.log(data);
+            })
+            .catch((err) => {
+                setSummaryLoad(false);
+                console.error("Failed to start conversation:", err);
+            });
+    };
 
     // Update messages if conversation prop changes
     useEffect(() => {
@@ -179,47 +202,22 @@ const AIChatInterface = ({ conversation }) => {
                                 {summary === "" && summaryLoad === false && (
                                     <div>click generate summary</div>
                                 )}
-                                {summary === "" && summaryLoad === true && (
+                                {summaryLoad === true && (
                                     <span className="loading loading-bars loading-xl"></span>
                                 )}
                                 {summary !== "" && summaryLoad === false && (
                                     <div>{summary}</div>
                                 )}
                                 <div className="modal-action">
-                                    <button
-                                        className="btn bg-violet-300 border-purple-400 hover:text-white hover:bg-[#39344a]"
-                                        onClick={() => {
-                                            setSummaryLoad(true);
-                                            fetch(
-                                                `http://127.0.0.1:8000/api/chat/conversation/${conversation?.id}/summary`,
-                                                {
-                                                    method: "Get",
-                                                    headers: {
-                                                        "Content-Type":
-                                                            "application/json",
-                                                        Authorization: `Bearer ${localStorage.getItem(
-                                                            "token"
-                                                        )}`,
-                                                    },
-                                                }
-                                            )
-                                                .then((res) => res.json())
-                                                .then((data) => {
-                                                    setSummary(data);
-                                                    setSummaryLoad(false);
-                                                    console.log(data);
-                                                })
-                                                .catch((err) => {
-                                                    setSummaryLoad(false);
-                                                    console.error(
-                                                        "Failed to start conversation:",
-                                                        err
-                                                    );
-                                                });
-                                        }}
-                                    >
-                                        Generate Summary
-                                    </button>
+                                    {!summaryLoad && (
+                                        <button
+                                            className="btn bg-violet-300 border-purple-400 hover:text-white hover:bg-[#39344a]"
+                                            onClick={() => summaryFetch()}
+                                        >
+                                            Generate Summary
+                                        </button>
+                                    )}
+
                                     <form
                                         method="dialog"
                                         className="flex space-x-3"

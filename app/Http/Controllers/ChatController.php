@@ -98,6 +98,13 @@ class ChatController extends Controller
         $aiData = $ollamaResponse->json();
         return response()->json($aiData["response"]);
     }
+    public function deleteConv(Request $request){
+        $id = $request->id;
+        $conversation = Conversation::where('id', $id);
+        $conversation->delete();
+        return response()->json(["message"=>"deleted successfully"]);
+
+    }
 
     public function sendMessage(Request $request)
     {
