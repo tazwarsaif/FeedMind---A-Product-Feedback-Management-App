@@ -146,7 +146,7 @@ const Conversations = () => {
                     ) : (
                         conversations.map((conv) => (
                             <div
-                                className="bg-[#2c2841] hover:bg-[#39344a] rounded-lg shadow cursor-pointer flex justify-between p-5"
+                                className="bg-[#2c2841] hover:bg-[#554e6b] rounded-lg shadow cursor-pointer flex justify-between p-5 my-2"
                                 key={conv.id}
                             >
                                 <>
@@ -158,9 +158,16 @@ const Conversations = () => {
                                     >
                                         <a
                                             href={`/feedgpt/${conv.id}`}
-                                            className="text-purple-300 w-25 md:w-full text-2xl text-wrap break-words"
+                                            className="text-purple-300 w-27 md:w-full text-xl text-wrap break-words"
                                         >
                                             {conv.title}
+                                            <span className="text-[10px] text-gray-400">
+                                                {" "}
+                                                {/* Smaller and lighter text */}
+                                                {new Date(
+                                                    conv.created_at
+                                                ).toLocaleDateString("en-CA")}
+                                            </span>
                                         </a>
                                     </div>
                                     <div className="inline-flex items-center cursor-pointer transition-colors space-x-2">

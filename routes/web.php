@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\GeneralController;
+use App\Http\Controllers\ViewController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -27,14 +27,14 @@ Route::get('/amazon-scrape', function () {
     return Inertia::render('ScrapePage');
 });
 
-Route::get('/login',[GeneralController::class,'loginView'])->name('login');
-Route::get('/register',[GeneralController::class,'registerView'])->name('register');
-Route::get('/dashboard',[GeneralController::class,'dashboardView'])->name('dashboard');
-Route::get('/conversations',[GeneralController::class,'getConversationsView'])->name('conversations');
+Route::get('/login',[ViewController::class,'loginView'])->name('login');
+Route::get('/register',[ViewController::class,'registerView'])->name('register');
+Route::get('/dashboard',[ViewController::class,'dashboardView'])->name('dashboard');
+Route::get('/conversations',[ViewController::class,'getConversationsView'])->name('conversations');
 
 
 
-Route::get("/feedgpt/{id}",[GeneralController::class,'feedGPTView'])->name('feedgpt');
+Route::get("/feedgpt/{id}",[ViewController::class,'feedGPTView'])->name('feedgpt');
 
 Route::get('/unauthorized', function () {
     abort(403);
