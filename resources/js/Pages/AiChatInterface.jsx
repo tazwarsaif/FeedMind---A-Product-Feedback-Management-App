@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
-
+import ReactMarkdown from "react-markdown";
 const AIChatInterface = ({ conversation }) => {
     const token = localStorage.getItem("token");
     const [summary, setSummary] = useState("");
@@ -259,7 +259,9 @@ const AIChatInterface = ({ conversation }) => {
                                 )}
                                 <div className="flex-1">
                                     <div className="whitespace-pre-wrap">
-                                        {message?.content}
+                                        <ReactMarkdown>
+                                            {message?.content}
+                                        </ReactMarkdown>
                                     </div>
                                     <div className="text-xs mt-1 opacity-70">
                                         {message?.timestamp.toLocaleTimeString(

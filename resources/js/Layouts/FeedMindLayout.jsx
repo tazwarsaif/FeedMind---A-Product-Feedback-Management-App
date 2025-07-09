@@ -569,29 +569,31 @@ const FeedMindLayout = ({ children, user }) => {
                                                                 </div>
                                                             </div>
 
-                                                            {slicedConvo.map(
-                                                                (
-                                                                    item,
-                                                                    itemIndex
-                                                                ) => (
-                                                                    <a
-                                                                        key={
-                                                                            itemIndex
-                                                                        }
-                                                                        href={`/feedgpt/${item.id}`}
-                                                                        className={`flex items-center px-3 py-2 text-sm rounded-lg transition-colors ${
-                                                                            url ===
-                                                                            item.href
-                                                                                ? "bg-[#39344a] text-white"
-                                                                                : "text-gray-400 hover:text-white hover:bg-[#39344a]"
-                                                                        }`}
-                                                                    >
-                                                                        {
-                                                                            item.title
-                                                                        }
-                                                                    </a>
-                                                                )
-                                                            )}
+                                                            {user.conversations
+                                                                .slice(0, 5)
+                                                                .map(
+                                                                    (
+                                                                        item,
+                                                                        itemIndex
+                                                                    ) => (
+                                                                        <a
+                                                                            key={
+                                                                                itemIndex
+                                                                            }
+                                                                            href={`/feedgpt/${item.id}`}
+                                                                            className={`flex items-center px-3 py-2 text-sm rounded-lg transition-colors ${
+                                                                                url ===
+                                                                                item.href
+                                                                                    ? "bg-[#39344a] text-white"
+                                                                                    : "text-gray-400 hover:text-white hover:bg-[#39344a]"
+                                                                            }`}
+                                                                        >
+                                                                            {
+                                                                                item.title
+                                                                            }
+                                                                        </a>
+                                                                    )
+                                                                )}
                                                             <div>
                                                                 <button
                                                                     className="flex items-center px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-[#39344a] rounded-lg transition-colors cursor-pointer w-full"

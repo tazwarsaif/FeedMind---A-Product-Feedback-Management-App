@@ -11,18 +11,23 @@ const Conversations = () => {
     const [error, setError] = useState(null);
     const [summary, setSummary] = useState("");
     const [summaryLoad, setSummaryLoad] = useState(false);
-    const summaryFetch = async (id) => {
+    const [convTitle, setConvTitle] = useState("");
+    const summaryFetch = async (conv) => {
         setSummaryLoad(true);
-        fetch(`http://127.0.0.1:8000/api/chat/conversation/${id}/summary`, {
-            method: "Get",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-        })
+        fetch(
+            `http://127.0.0.1:8000/api/chat/conversation/${conv?.id}/summary`,
+            {
+                method: "Get",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+            }
+        )
             .then((res) => res.json())
             .then((data) => {
                 setSummary(data);
+                conv.summary = data;
                 setSummaryLoad(false);
                 console.log(data);
             })
@@ -129,9 +134,110 @@ const Conversations = () => {
             <Header title={"Conversations"} />
             <FeedMindLayout user={user}>
                 <div className="p-6">
-                    <h1 className="text-2xl font-bold mb-4 text-purple-300">
-                        Your Conversations
-                    </h1>
+                    <div className="flex flex-col md:flex-row md:justify-between items-center mb-6 md:mb-0">
+                        <div>
+                            <h1 className="text-2xl font-bold mb-4 text-purple-300">
+                                Your Conversations
+                            </h1>
+                        </div>
+                        <div>
+                            <button
+                                className="bg-slate-300 flex items-center px-3 py-2 text-sm text-purple-800 hover:text-white hover:bg-[#39344a] rounded-lg transition-colors cursor-pointer w-full"
+                                onClick={() =>
+                                    document
+                                        .getElementById("my_modal_5")
+                                        .showModal()
+                                }
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="h-5 w-5 mr-2"
+                                    viewBox="0 0 20 20"
+                                    fill="currentColor"
+                                >
+                                    <path
+                                        fillRule="evenodd"
+                                        d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                                        clipRule="evenodd"
+                                    />
+                                </svg>
+                                Add Conversation
+                            </button>
+                            <dialog
+                                id="my_modal_5"
+                                className="modal modal-bottom sm:modal-middle"
+                            >
+                                <div className="modal-box bg-[#39344a] text-white">
+                                    <h3 className="font-bold text-lg">
+                                        Title of the Conversation
+                                    </h3>
+                                    <input
+                                        type="text"
+                                        placeholder="Enter title"
+                                        value={convTitle}
+                                        className="input input-bordered w-full text-black mt-3"
+                                        onChange={(e) =>
+                                            setConvTitle(e.target.value)
+                                        }
+                                    />
+                                    <div className="modal-action">
+                                        <form
+                                            method="dialog"
+                                            className="flex space-x-3"
+                                        >
+                                            {/* if there is a button in form, it will close the modal */}
+                                            <button
+                                                className="btn bg-violet-300 border-purple-400 hover:text-white hover:bg-[#39344a]"
+                                                onClick={() => {
+                                                    fetch(
+                                                        "http://127.0.0.1:8000/api/chat/start",
+                                                        {
+                                                            method: "POST",
+                                                            headers: {
+                                                                "Content-Type":
+                                                                    "application/json",
+                                                                Authorization: `Bearer ${localStorage.getItem(
+                                                                    "token"
+                                                                )}`,
+                                                            },
+                                                            body: JSON.stringify(
+                                                                {
+                                                                    title: convTitle,
+                                                                }
+                                                            ),
+                                                        }
+                                                    )
+                                                        .then((res) =>
+                                                            res.json()
+                                                        )
+                                                        .then((data) => {
+                                                            if (
+                                                                data &&
+                                                                data.id
+                                                            ) {
+                                                                window.location.href = `/feedgpt/${data.id}`;
+                                                            }
+                                                        })
+                                                        .catch((err) => {
+                                                            console.error(
+                                                                "Failed to start conversation:",
+                                                                err
+                                                            );
+                                                        });
+                                                }}
+                                            >
+                                                Start Conversation
+                                            </button>
+                                            <button className="btn ">
+                                                Close
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </dialog>
+                        </div>
+                    </div>
+
                     {loadingConvos ? (
                         <div className="flex items-center space-x-2 text-purple-300">
                             <div className="w-6 h-6 border-4 border-[#a892fe] border-t-transparent rounded-full animate-spin"></div>
@@ -209,7 +315,7 @@ const Conversations = () => {
                                                         Summarization of the
                                                         Conversation
                                                     </h3>
-                                                    {summary === "" &&
+                                                    {!conv.summary &&
                                                         summaryLoad ===
                                                             false && (
                                                             <div>
@@ -220,10 +326,12 @@ const Conversations = () => {
                                                     {summaryLoad === true && (
                                                         <span className="loading loading-bars loading-xl"></span>
                                                     )}
-                                                    {summary !== "" &&
+                                                    {conv?.summary &&
                                                         summaryLoad ===
                                                             false && (
-                                                            <div>{summary}</div>
+                                                            <div>
+                                                                {conv?.summary}
+                                                            </div>
                                                         )}
                                                     <div className="modal-action">
                                                         {!summaryLoad && (
@@ -231,7 +339,7 @@ const Conversations = () => {
                                                                 className="btn bg-violet-300 border-purple-400 hover:text-white hover:bg-[#39344a]"
                                                                 onClick={() =>
                                                                     summaryFetch(
-                                                                        conv.id
+                                                                        conv
                                                                     )
                                                                 }
                                                             >
@@ -242,6 +350,9 @@ const Conversations = () => {
                                                         <form
                                                             method="dialog"
                                                             className="flex space-x-3"
+                                                            onSubmit={() =>
+                                                                setSummary("")
+                                                            }
                                                         >
                                                             {/* if there is a button in form, it will close the modal */}
 

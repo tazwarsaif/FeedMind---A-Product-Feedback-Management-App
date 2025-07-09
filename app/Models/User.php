@@ -50,4 +50,8 @@ class User extends Authenticatable
     {
         return $this->hasMany(Conversation::class);
     }
+    public function aiCachedSummaries()
+    {
+        return $this->hasMany(AiCachedSummary::class);
+    }
 }
