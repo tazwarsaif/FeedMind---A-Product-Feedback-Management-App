@@ -26,4 +26,8 @@ class ViewController extends Controller
         //dd($request->user());
         return inertia("Conversations");
     }
+    public function getProductsView() {
+        //dd($request->user());
+        return inertia("ProductsPage");
+    }
 }

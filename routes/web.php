@@ -31,6 +31,7 @@ Route::get('/login',[ViewController::class,'loginView'])->name('login');
 Route::get('/register',[ViewController::class,'registerView'])->name('register');
 Route::get('/dashboard',[ViewController::class,'dashboardView'])->name('dashboard');
 Route::get('/conversations',[ViewController::class,'getConversationsView'])->name('conversations');
+Route::get('/products',[ViewController::class,'getProductsView'])->name('products');
 
 
 

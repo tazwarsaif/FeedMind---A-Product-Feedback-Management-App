@@ -143,8 +143,7 @@ class ChatController extends Controller
 
     }
 
-    public function sendMessage(Request $request)
-    {
+    public function sendMessage(Request $request){
         set_time_limit(300);
 
         try {
