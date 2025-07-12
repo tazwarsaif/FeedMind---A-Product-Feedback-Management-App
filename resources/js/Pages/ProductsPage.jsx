@@ -14,6 +14,7 @@ const ProductsPage = () => {
     const token = localStorage.getItem("token");
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [products, setProducts] = useState([]);
 
     useEffect(() => {
         if (!token) {
@@ -49,6 +50,38 @@ const ProductsPage = () => {
 
         fetchUser();
     }, [token]);
+    useEffect(() => {
+        if (!token) {
+            router.visit("/unauthorized");
+            return;
+        }
+
+        const fetchCategoriesWithProducts = async () => {
+            try {
+                const response = await fetch(
+                    "/api/products/categories-with-products",
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
+                );
+                if (response.ok) {
+                    const data = await response.json();
+                    setProducts(data);
+                    console.log("Fetched products:", data);
+                } else {
+                    router.visit("/unauthorized");
+                }
+            } catch (error) {
+                router.visit("/unauthorized");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchCategoriesWithProducts();
+    }, [token]);
 
     // ----------- MODIFIED: Persist expandedCategories -----------
     useEffect(() => {
@@ -79,122 +112,7 @@ const ProductsPage = () => {
     }, [expandedCategories]);
     // -----------------------------------------------------------
 
-    const categories = [
-        {
-            name: "Electronics",
-            products: [
-                {
-                    id: 1,
-                    name: "Wireless Bluetooth Headphones",
-                    price: 89.99,
-                    description:
-                        "Premium quality wireless headphones with noise cancellation and 30-hour battery life.",
-                    images: [
-                        "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop",
-                        "https://images.unsplash.com/photo-1484704849700-f032a568e944?w=400&h=400&fit=crop",
-                        "https://images.unsplash.com/photo-1487215078519-e21cc028cb29?w=400&h=400&fit=crop",
-                    ],
-                    amazonReviews: [
-                        {
-                            user: "John D.",
-                            rating: 5,
-                            comment: "Amazing sound quality and battery life!",
-                        },
-                        {
-                            user: "Sarah M.",
-                            rating: 4,
-                            comment:
-                                "Great headphones, comfortable for long use.",
-                        },
-                    ],
-                    inAppReviews: [
-                        {
-                            user: "Mike Johnson",
-                            rating: 5,
-                            comment: "Perfect for my daily commute!",
-                        },
-                    ],
-                    category: "Electronics",
-                },
-                {
-                    id: 2,
-                    name: "Smart Watch Pro",
-                    price: 299.99,
-                    description:
-                        "Advanced fitness tracking, heart rate monitoring, and GPS capabilities.",
-                    images: [
-                        "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=400&fit=crop",
-                        "https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=400&h=400&fit=crop",
-                    ],
-                    amazonReviews: [
-                        {
-                            user: "Lisa K.",
-                            rating: 5,
-                            comment: "Best smartwatch I've ever owned!",
-                        },
-                    ],
-                    inAppReviews: [],
-                    category: "Electronics",
-                },
-            ],
-        },
-        {
-            name: "Home & Kitchen",
-            products: [
-                {
-                    id: 3,
-                    name: "Stainless Steel Coffee Maker",
-                    price: 159.99,
-                    description:
-                        "Programmable coffee maker with thermal carafe and built-in grinder.",
-                    images: [
-                        "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=400&h=400&fit=crop",
-                        "https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=400&h=400&fit=crop",
-                    ],
-                    amazonReviews: [
-                        {
-                            user: "David L.",
-                            rating: 4,
-                            comment: "Makes excellent coffee every morning!",
-                        },
-                    ],
-                    inAppReviews: [
-                        {
-                            user: "Emma Wilson",
-                            rating: 5,
-                            comment: "Worth every penny!",
-                        },
-                    ],
-                    category: "Home & Kitchen",
-                },
-            ],
-        },
-        {
-            name: "Books",
-            products: [
-                {
-                    id: 4,
-                    name: "The Art of Programming",
-                    price: 49.99,
-                    description:
-                        "Comprehensive guide to modern programming techniques and best practices.",
-                    images: [
-                        "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&h=400&fit=crop",
-                        "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&h=400&fit=crop",
-                    ],
-                    amazonReviews: [
-                        {
-                            user: "Alex P.",
-                            rating: 5,
-                            comment: "Excellent resource for developers!",
-                        },
-                    ],
-                    inAppReviews: [],
-                    category: "Books",
-                },
-            ],
-        },
-    ];
+    const categories = products;
 
     const toggleCategory = (categoryName) => {
         setExpandedCategories((prev) => ({
@@ -422,7 +340,6 @@ const ProductsPage = () => {
                                                                 </p>
                                                                 <div className="flex items-center justify-between">
                                                                     <span className="text-xl font-bold text-green-400">
-                                                                        $
                                                                         {
                                                                             product.price
                                                                         }

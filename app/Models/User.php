@@ -54,4 +54,12 @@ class User extends Authenticatable
     {
         return $this->hasMany(AiCachedSummary::class);
     }
+    public function products()
+    {
+        return $this->hasMany(Product::class);
+    }
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
+    }
 }

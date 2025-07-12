@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\StaticController;
+use App\Http\Controllers\ProductController;
 
 Route::get('/user', function (Request $request) {
     $user = $request->user();
@@ -31,6 +33,11 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
 Route::post('/scrape', ScrapeController::class);
+
+Route::get('/load-static-products', [StaticController::class, 'storeMultipleAmazonProducts']);
+
+Route::get('/products/categories-with-products', [ProductController::class, 'getAllCategoriesWithProducts']);
+Route::get('/products/categories', [StaticController::class, 'getCategories']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post("/ai-scrape", [ChatController::class,'message']);

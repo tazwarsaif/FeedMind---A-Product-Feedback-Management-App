@@ -7,6 +7,11 @@ use Symfony\Component\Panther\Client;
 use Symfony\Component\DomCrawler\Crawler;
 use GuzzleHttp\Client as Guzzle;
 use Illuminate\Support\Facades\Log;
+use App\Models\Product;
+use App\Models\Category;
+use App\Models\AmazonReview;
+use App\Models\AmazonImages;
+use Illuminate\Support\Facades\DB;
 
 class ScrapeController extends Controller
 {
@@ -36,8 +41,21 @@ class ScrapeController extends Controller
             if (!$result) {
                 throw new \Exception("Invalid scrape result.");
             }
+            $arr = [];
+            if (!empty($result['reviews']) && !empty($result['individualRatings'])) {
+                foreach ($result['reviews'] as $i => $review) {
+                    $rating = $result['individualRatings'][$i] ?? null;
+                    if ($rating !== null) {
+                        $arr[] = [
+                            'review' => $review,
+                            'rating' => (int)$rating,
+                            'reviewer_name' => $result['reviewerNames'][$i] ?? null,
+                        ];
+                    }
+                }
+            }
 
-            return response()->json($result);
+            return response()->json($arr);
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Scraping failed: ' . $e->getMessage()
