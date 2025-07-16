@@ -1,12 +1,25 @@
+import { router } from "@inertiajs/react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import FeedMindLayout from "../Layouts/FeedMindLayout";
 import Header from "../Layouts/Header";
 
-const ProductsPage = () => {
+const ProductsPage = ({ productsFromBack }) => {
+    console.log(
+        "ProductsPage rendered with productsFromBack:",
+        productsFromBack
+    );
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [searchQuery, setSearchQuery] = useState("");
-    const [expandedCategories, setExpandedCategories] = useState({});
+    const [expandedCategories, setExpandedCategories] = useState(() => {
+        // Assuming 'products' is available at this stage or use 'productsFromBack':
+        const source = productsFromBack || [];
+        const allExpanded = {};
+        source.forEach((cat) => {
+            allExpanded[cat.name] = true;
+        });
+        return allExpanded;
+    });
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [newReview, setNewReview] = useState("");
     const [newRating, setNewRating] = useState(5);
@@ -14,7 +27,11 @@ const ProductsPage = () => {
     const token = localStorage.getItem("token");
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [products, setProducts] = useState([]);
+    const [products, setProducts] = useState(productsFromBack || []);
+    const [query, setQuery] = useState("");
+    const [suggestions, setSuggestions] = useState([]);
+    const [search, setSearch] = useState("");
+    const [isFocused, setIsFocused] = useState(false);
 
     useEffect(() => {
         if (!token) {
@@ -50,67 +67,6 @@ const ProductsPage = () => {
 
         fetchUser();
     }, [token]);
-    useEffect(() => {
-        if (!token) {
-            router.visit("/unauthorized");
-            return;
-        }
-
-        const fetchCategoriesWithProducts = async () => {
-            try {
-                const response = await fetch(
-                    "/api/products/categories-with-products",
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                        },
-                    }
-                );
-                if (response.ok) {
-                    const data = await response.json();
-                    setProducts(data);
-                    console.log("Fetched products:", data);
-                } else {
-                    router.visit("/unauthorized");
-                }
-            } catch (error) {
-                router.visit("/unauthorized");
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchCategoriesWithProducts();
-    }, [token]);
-
-    // ----------- MODIFIED: Persist expandedCategories -----------
-    useEffect(() => {
-        // On mount, load expandedCategories from localStorage
-        const stored = localStorage.getItem("expandedCategories");
-        if (stored) {
-            setExpandedCategories(JSON.parse(stored));
-        } else {
-            // By default, expand all categories
-            const defaultExpanded = {};
-            categories.forEach((cat) => {
-                defaultExpanded[cat.name] = true;
-            });
-            setExpandedCategories(defaultExpanded);
-            localStorage.setItem(
-                "expandedCategories",
-                JSON.stringify(defaultExpanded)
-            );
-        }
-    }, []);
-
-    useEffect(() => {
-        // Whenever expandedCategories changes, update localStorage
-        localStorage.setItem(
-            "expandedCategories",
-            JSON.stringify(expandedCategories)
-        );
-    }, [expandedCategories]);
-    // -----------------------------------------------------------
 
     const categories = products;
 
@@ -185,6 +141,19 @@ const ProductsPage = () => {
             ),
         }))
         .filter((category) => category.products.length > 0);
+    const handleInputChange = async (e) => {
+        const value = e.target.value;
+        setQuery(value);
+
+        // fetch suggestions
+        const res = await fetch(`/api/search/suggestions?q=${value}`);
+        const data = await res.json();
+        console.log("Suggestions:", data);
+        setSuggestions(data);
+    };
+    const settingText = (e) => {
+        setSearch(e.target.value);
+    };
 
     // Close modal when clicking outside
     useEffect(() => {
@@ -242,10 +211,20 @@ const ProductsPage = () => {
                             <input
                                 type="text"
                                 placeholder="Search products..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full px-4 py-2 pl-10 bg-[#2c2841] border border-[#39344a] rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                                value={search}
+                                name="search"
+                                onChange={(e) => {
+                                    settingText(e);
+                                    handleInputChange(e);
+                                }}
+                                onFocus={() => setIsFocused(true)}
+                                onBlur={() =>
+                                    setTimeout(() => setIsFocused(false), 200)
+                                }
+                                className="w-full px-4 py-2 pl-10 pr-12 bg-[#2c2841] border border-[#39344a] rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-400"
                             />
+
+                            {/* Search Icon (left side) */}
                             <svg
                                 className="absolute left-3 top-2.5 h-5 w-5 text-gray-400"
                                 fill="none"
@@ -259,6 +238,51 @@ const ProductsPage = () => {
                                     d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                                 />
                             </svg>
+
+                            {/* Search Button (right side) */}
+                            <button
+                                onClick={() => {
+                                    // Handle search button click
+                                    router.get(`/products?search=${search}`);
+                                }}
+                                className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-purple-800 hover:bg-purple-700 text-white p-1 rounded-md text-sm w-20 cursor-pointer transition-colors"
+                            >
+                                Search
+                            </button>
+
+                            {isFocused && suggestions.length > 0 && (
+                                <ul className="absolute top-full left-0 w-full bg-[#2c2841] shadow-md z-20 max-h-80 overflow-auto">
+                                    {suggestions.map((item, index) => (
+                                        <li
+                                            key={index}
+                                            className="p-2 cursor-pointer hover:bg-gray-400 flex space-x-2 max-w-2xl border-b border-gray-600"
+                                            onClick={() => {
+                                                setSearch(item); // optional: update field
+                                                setIsFocused(false);
+                                                router.get(
+                                                    `/products`,
+                                                    {
+                                                        search: item?.name,
+                                                    },
+                                                    {
+                                                        preserveState: true,
+                                                    }
+                                                );
+                                            }}
+                                        >
+                                            <div>{item?.name}</div>
+                                            <div>{item?.price}</div>
+                                            <div>
+                                                <img
+                                                    src={item?.images[1]}
+                                                    alt={item?.name}
+                                                    className="w-50 h-10 object-cover rounded-md"
+                                                />
+                                            </div>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
                         </div>
                     </div>
                     {/* Categories */}

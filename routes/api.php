@@ -39,6 +39,8 @@ Route::get('/load-static-products', [StaticController::class, 'storeMultipleAmaz
 Route::get('/products/categories-with-products', [ProductController::class, 'getAllCategoriesWithProducts']);
 Route::get('/products/categories', [StaticController::class, 'getCategories']);
 
+Route::get('/search/suggestions', [ProductController::class,'projectSearch']);
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::post("/ai-scrape", [ChatController::class,'message']);
     Route::get('/chat', [ChatController::class, 'index']);
