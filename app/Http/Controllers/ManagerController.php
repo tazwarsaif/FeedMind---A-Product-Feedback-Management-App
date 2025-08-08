@@ -5,45 +5,47 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\SuggestedCategorySet;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Inertia\Inertia;
 
-class ViewController extends Controller
+class ManagerController extends Controller
 {
     public function loginView() {
-        return inertia("Auth/Login");
-    }
-    public function registerView() {
-        return inertia("Auth/Register");
+        return inertia("Manager/ManagerLogin");
     }
     public function dashboardView() {
         //dd($request->user());
-        return inertia("Dashboard");
+        return inertia("Manager/Dashboard");
     }
     public function feedGPTView() {
         //dd($request->user());
-        return inertia("ChatPage");
+        return inertia("Manager/ChatPage");
     }
     public function getConversationsView() {
         //dd($request->user());
-        return inertia("Conversations");
+        return inertia("Manager/Conversations");
     }
-    public function getProductsView(Request $request) {
-        if($request->query('search')) {
+    public function addProduct(){
+        return inertia("Manager/AddProduct");
+    }
+    public function myProducts(){
+        return inertia("Manager/MyProducts");
+    }
+    public function getProductsView(Request $request)
+    {
+        if ($request->query('search')) {
             $searchQuery = $request->query('search');
-            //Here I want to find the products according to the search query and then put all the products in a single category named "Searched Item"
             $products = \App\Models\Product::with([
                 'amazonImages',
                 'amazonReviews',
                 'reviews',
                 'categories'
             ])->where('name', 'like', '%' . $searchQuery . '%')->get();
-            if(strlen($searchQuery) > 50) {
+
+            if (strlen($searchQuery) > 50) {
                 $name = 'Searched Item "' . substr($searchQuery, 0, 50) . '..."';
-            }else {
+            } else {
                 $name = 'Searched Item "' . $searchQuery . '"';
             }
-            // Format products into a single "Searched Item" category
+
             $result = collect([
                 [
                     'name' => $name,
@@ -74,32 +76,26 @@ class ViewController extends Controller
                 ]
             ]);
 
-            return inertia("ProductsPage", [
+            return inertia("Manager/ProductsPage", [
                 'productsFromBack' => $result
             ]);
         }
-        $categoryNames = Category::pluck('name')->toArray();
+        $allCategoryNames = Category::inRandomOrder()->pluck('name')->toArray();
+        $chunkSize = 6;
+        $chunkedCategoryNames = array_chunk($allCategoryNames, $chunkSize);
+        // 2. Pick first 6 category names from that shuffled list
+        $selectedCategoryNames = array_slice($allCategoryNames, 0, 6);
 
-        // Pick a random SuggestedCategorySet (IDs 1 to 10 assumed)
-        $setId = rand(1, 10);
-        $set = SuggestedCategorySet::find($setId);
-
-
-        // Use categories from the set if found and not empty
-        if ($set && !empty($set->categories)) {
-            $categoryNames = $set->categories;
-        }
-
-        // Fetch categories with related products and reviews
+        // 3. Fetch only the first 6 categories with related products & reviews
         $categories = Category::with([
                 'products.amazonImages',
                 'products.amazonReviews',
                 'products.reviews'
             ])
-            ->whereIn('name', $categoryNames)
+            ->whereIn('name', $selectedCategoryNames)
             ->get();
 
-        // Format data for response
+        // 4. Format categories and their products
         $result = $categories->map(function ($category) {
             return [
                 'name' => $category->name,
@@ -109,7 +105,6 @@ class ViewController extends Controller
                         'name' => $product->name,
                         'price' => $product->price,
                         'description' => $product->description,
-                        // Get all images, remove slice(1) if first image needed
                         'images' => array_values($product->amazonImages->pluck('image_url')->slice(1)->toArray()),
                         'amazonReviews' => $product->amazonReviews->map(function ($review) {
                             return [
@@ -131,10 +126,11 @@ class ViewController extends Controller
             ];
         });
 
-        return inertia("ProductsPage", [
+        // 5. Return inertia response:
+        return inertia("Manager/ProductsPage", [
             'productsFromBack' => $result,
-            'set' => $set ? $set->name : null
+            'categoryOrder' => $chunkedCategoryNames, // all category names in random order
         ]);
     }
-}
 
+}

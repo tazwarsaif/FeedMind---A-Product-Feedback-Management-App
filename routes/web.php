@@ -6,6 +6,7 @@ use Inertia\Inertia;
 
 // routes/web.php
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\ManagerController;
 use Illuminate\Support\Facades\Redirect;
 
 Route::middleware(['auth'])->group(function () {
@@ -33,6 +34,18 @@ Route::get('/dashboard',[ViewController::class,'dashboardView'])->name('dashboar
 Route::get('/conversations',[ViewController::class,'getConversationsView'])->name('conversations');
 Route::get('/products',[ViewController::class,'getProductsView'])->name('products');
 
+Route::prefix('manager')->group(function () {
+    Route::get('/dashboard', [ManagerController::class, 'dashboardView'])->name('manager.dashboard');
+    Route::get('/feedgpt/{id}', [ManagerController::class, 'feedGPTView'])->name('manager.feedgpt');
+    Route::get('/conversations', [ManagerController::class, 'getConversationsView'])->name('manager.conversations');
+    Route::get('/products', [ManagerController::class, 'getProductsView'])->name('manager.products');
+    Route::get('/amazon-scrape', function () {
+        return inertia('Manager/ScrapePage');
+    })->name('manager.scrape');
+    Route::get("/add-product",[ManagerController::class,'addProduct'])->name('manager.add-product');
+    Route::get("/my-products",[ManagerController::class,'MyProducts'])->name('manager.my-products');
+    // Route::get('/login',[ViewController::class,'loginView'])->name('login');
+});
 
 
 Route::get("/feedgpt/{id}",[ViewController::class,'feedGPTView'])->name('feedgpt');
@@ -40,3 +53,5 @@ Route::get("/feedgpt/{id}",[ViewController::class,'feedGPTView'])->name('feedgpt
 Route::get('/unauthorized', function () {
     abort(403);
 });
+
+

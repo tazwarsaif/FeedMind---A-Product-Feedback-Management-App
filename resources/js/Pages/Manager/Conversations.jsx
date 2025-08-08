@@ -1,8 +1,7 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import FeedMindLayout from "../Layouts/FeedMindLayout";
-import Header from "../Layouts/Header";
-
+import Header from "../../Layouts/Header";
+import ManagerLayout from "../../Layouts/ManagerLayout";
 const Conversations = () => {
     const [user, setUser] = useState(null);
     const [loadingUser, setLoadingUser] = useState(true);
@@ -128,15 +127,26 @@ const Conversations = () => {
             </div>
         );
     }
-    if (user.role_id === 1) {
-        window.location.href = "/manager/conversations";
-        return null;
+    if (user.role_id !== 1) {
+        return (
+            <div className="min-h-screen flex flex-row justify-center items-center bg-[#39344a]">
+                <div className="text-center">
+                    <p className="text-red-400 mb-4">Unauthorized access</p>
+                    <button
+                        onClick={() => router.visit("/unauthorized")}
+                        className="bg-[#a892fe] hover:bg-[#9581fe] text-white px-4 py-2 rounded-lg transition-colors"
+                    >
+                        Go to Unauthorized Page
+                    </button>
+                </div>
+            </div>
+        );
     }
 
     return (
         <>
             <Header title={"Conversations"} />
-            <FeedMindLayout user={user}>
+            <ManagerLayout user={user}>
                 <div className="p-6">
                     <div className="flex flex-col md:flex-row md:justify-between items-center mb-6 md:mb-0">
                         <div>
@@ -428,7 +438,7 @@ const Conversations = () => {
                         ))
                     )}
                 </div>
-            </FeedMindLayout>
+            </ManagerLayout>
         </>
     );
 };

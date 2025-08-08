@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\StaticController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\UserController;
 
 Route::get('/user', function (Request $request) {
     $user = $request->user();
@@ -39,7 +40,17 @@ Route::get('/load-static-products', [StaticController::class, 'storeMultipleAmaz
 Route::get('/products/categories-with-products', [ProductController::class, 'getAllCategoriesWithProducts']);
 Route::get('/products/categories', [StaticController::class, 'getCategories']);
 
-Route::get('/search/suggestions', [ProductController::class,'projectSearch']);
+Route::get('/search/suggestions', [ProductController::class,'productSearch']);
+
+Route::post('/add-review', [UserController::class, 'addReview'])->middleware('auth:sanctum');
+Route::middleware('auth:sanctum')->group(function (){
+    Route::post('/add-product', [ProductController::class, 'addProduct']);
+    Route::put('/products/{id}', [ProductController::class, 'updateProduct']);
+    Route::delete('/products/{id}', [ProductController::class, 'deleteProduct']);
+    Route::get("/get-my-products",[ProductController::class, "getMyProducts"]);
+
+});
+
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post("/ai-scrape", [ChatController::class,'message']);

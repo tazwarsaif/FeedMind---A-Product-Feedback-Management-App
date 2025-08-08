@@ -1,7 +1,6 @@
-import { router } from "@inertiajs/react";
 import { useEffect, useState } from "react";
-import FeedMindLayout from "../Layouts/FeedMindLayout";
-import Header from "../Layouts/Header";
+import Header from "../../Layouts/Header";
+import ManagerLayout from "../../Layouts/ManagerLayout";
 import AIChatInterface from "./AiChatInterface";
 const ChatPage = () => {
     const token = localStorage.getItem("token");
@@ -122,33 +121,44 @@ const ChatPage = () => {
             </div>
         );
     }
-    if (user.role_id === 1) {
-        window.location.href = "/unauthorized";
-        return null;
+    if (user.role_id !== 1) {
+        return (
+            <div className="min-h-screen flex flex-row justify-center items-center bg-[#39344a]">
+                <div className="text-center">
+                    <p className="text-red-400 mb-4">Unauthorized access</p>
+                    <button
+                        onClick={() => router.visit("/unauthorized")}
+                        className="bg-[#a892fe] hover:bg-[#9581fe] text-white px-4 py-2 rounded-lg transition-colors"
+                    >
+                        Go to Unauthorized Page
+                    </button>
+                </div>
+            </div>
+        );
     }
 
-    const handleLogout = async () => {
-        try {
-            await fetch("http://127.0.0.1:8000/api/logout", {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    "Content-Type": "application/json",
-                },
-            });
-        } catch (error) {
-            console.error("Logout error:", error);
-        }
-        localStorage.removeItem("token");
-        router.visit("/login");
-    };
+    // const handleLogout = async () => {
+    //     try {
+    //         await fetch("http://127.0.0.1:8000/api/logout", {
+    //             method: "POST",
+    //             headers: {
+    //                 Authorization: `Bearer ${token}`,
+    //                 "Content-Type": "application/json",
+    //             },
+    //         });
+    //     } catch (error) {
+    //         console.error("Logout error:", error);
+    //     }
+    //     localStorage.removeItem("token");
+    //     router.visit("/login");
+    // };
 
     return (
         <>
             <Header title={"FeedGPT"} />
-            <FeedMindLayout user={user}>
+            <ManagerLayout user={user}>
                 <AIChatInterface conversation={conversation} />
-            </FeedMindLayout>
+            </ManagerLayout>
         </>
     );
 };

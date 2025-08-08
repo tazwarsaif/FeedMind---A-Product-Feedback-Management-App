@@ -1,8 +1,8 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
-import FeedMindLayout from "../Layouts/FeedMindLayout";
-import Header from "../Layouts/Header";
+import Header from "../../Layouts/Header";
+import ManagerLayout from "../../Layouts/ManagerLayout";
 const ScrapePage = () => {
     const [url, setUrl] = useState("");
     const [result, setResult] = useState(null);
@@ -101,15 +101,26 @@ const ScrapePage = () => {
             </div>
         );
     }
-    if (user.role_id === 1) {
-        window.location.href = "/manager/amazon-scrape";
-        return null;
+    if (user.role_id !== 1) {
+        return (
+            <div className="min-h-screen flex flex-row justify-center items-center bg-[#39344a]">
+                <div className="text-center">
+                    <p className="text-red-400 mb-4">Unauthorized access</p>
+                    <button
+                        onClick={() => router.visit("/unauthorized")}
+                        className="bg-[#a892fe] hover:bg-[#9581fe] text-white px-4 py-2 rounded-lg transition-colors"
+                    >
+                        Go to Unauthorized Page
+                    </button>
+                </div>
+            </div>
+        );
     }
 
     return (
         <>
             <Header title={"Amazon Scrapper"} />
-            <FeedMindLayout user={user}>
+            <ManagerLayout user={user}>
                 <div className="p-6 text-slate-300">
                     <h1 className="text-2xl font-bold mb-4">Scrape Product</h1>
                     <input
@@ -211,7 +222,7 @@ const ScrapePage = () => {
                         </div>
                     )}
                 </div>
-            </FeedMindLayout>
+            </ManagerLayout>
         </>
     );
 };

@@ -1,7 +1,7 @@
 import { router } from "@inertiajs/react";
 import { useEffect, useState } from "react";
-import FeedMindLayout from "../Layouts/FeedMindLayout";
-import Header from "../Layouts/Header";
+import Header from "../../Layouts/Header";
+import ManagerLayout from "../../Layouts/ManagerLayout";
 const Dashboard = () => {
     const token = localStorage.getItem("token");
     const [user, setUser] = useState(null);
@@ -84,15 +84,26 @@ const Dashboard = () => {
             </div>
         );
     }
-    if (user.role_id === 1) {
-        window.location.href = "/manager/dashboard";
-        return null;
+    if (user.role_id !== 1) {
+        return (
+            <div className="min-h-screen flex flex-row justify-center items-center bg-[#39344a]">
+                <div className="text-center">
+                    <p className="text-red-400 mb-4">Unauthorized access</p>
+                    <button
+                        onClick={() => router.visit("/unauthorized")}
+                        className="bg-[#a892fe] hover:bg-[#9581fe] text-white px-4 py-2 rounded-lg transition-colors"
+                    >
+                        Go to Unauthorized Page
+                    </button>
+                </div>
+            </div>
+        );
     }
 
     return (
         <>
             <Header title={"Dashboard"} />
-            <FeedMindLayout user={user}>
+            <ManagerLayout user={user}>
                 {/* Welcome Section */}
                 <div className="bg-[#2c2841] rounded-xl p-6 mb-6">
                     <div className="flex items-center justify-between">
@@ -283,7 +294,14 @@ const Dashboard = () => {
                             Quick Actions
                         </h3>
                         <div className="grid grid-cols-2 gap-4">
-                            <button className="bg-[#a892fe] hover:bg-[#9581fe] text-white p-4 rounded-lg transition-colors text-left">
+                            <button
+                                className="bg-[#a892fe] hover:bg-[#9581fe] text-white p-4 rounded-lg transition-colors text-left"
+                                onClick={() =>
+                                    document
+                                        .getElementById("add_product_modal")
+                                        .showModal()
+                                }
+                            >
                                 <svg
                                     className="w-6 h-6 mb-2"
                                     fill="none"
@@ -302,6 +320,89 @@ const Dashboard = () => {
                                     Create new product
                                 </p>
                             </button>
+                            <dialog
+                                id={`add_product_modal`}
+                                className="modal modal-bottom sm:modal-middle"
+                            >
+                                <div className="modal-box flex flex-col gap-4 bg-[#39344a] text-white">
+                                    <div className="flex flex-col gap-2">
+                                        <label htmlFor="jobtitle">
+                                            Job Title:
+                                        </label>
+                                        <input
+                                            className="input input-neutral w-full text-[#39344a]"
+                                            type="text"
+                                        />
+                                    </div>
+                                    <div className="flex flex-col gap-2">
+                                        <label htmlFor="jobcompany">
+                                            Company Name:
+                                        </label>
+                                        <input
+                                            className="input input-neutral w-full text-[#39344a]"
+                                            type="text"
+                                        ></input>
+                                    </div>
+                                    <div className="flex flex-col gap-2">
+                                        <label htmlFor="jobdescription">
+                                            Description:
+                                        </label>
+                                        <textarea
+                                            className="textarea textarea-bordered w-full text-[#39344a]"
+                                            placeholder="Job description"
+                                        ></textarea>
+                                    </div>
+                                    <div className="flex flex-col gap-2">
+                                        <label htmlFor="jobdeadline">
+                                            Deadline:
+                                        </label>
+                                        <input
+                                            className="input input-neutral w-full text-[#39344a]"
+                                            type="date"
+                                        ></input>
+                                    </div>
+
+                                    <div className="flex flex-col gap-2">
+                                        <label htmlFor="jobsalary">
+                                            Salary:
+                                        </label>
+                                        <input
+                                            className="input input-neutral w-full text-[#39344a]"
+                                            type="number"
+                                        ></input>
+                                    </div>
+                                    <div className="flex flex-col gap-2">
+                                        <label htmlFor="joblocation">
+                                            Location:
+                                        </label>
+                                        <input
+                                            className="input input-neutral w-full text-[#39344a]"
+                                            type="text"
+                                        ></input>
+                                    </div>
+                                    <div className="flex flex-col gap-2">
+                                        <label htmlFor="jobcategory">
+                                            Category:
+                                        </label>
+                                        <input
+                                            className="input input-neutral w-full text-[#39344a]"
+                                            type="text"
+                                        ></input>
+                                    </div>
+
+                                    <div className="modal-action space-x-2">
+                                        <button className="btn bg-[#a892fe] hover:bg-[#9581fe] border-none text-[#39344a]">
+                                            Save Changes
+                                        </button>
+                                        <form method="dialog">
+                                            {/* if there is a button in form, it will close the modal */}
+                                            <button className="btn">
+                                                Close
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </dialog>
                             <button className="bg-[#39344a] hover:bg-[#4a4458] text-white p-4 rounded-lg transition-colors text-left">
                                 <svg
                                     className="w-6 h-6 mb-2"
@@ -350,7 +451,7 @@ const Dashboard = () => {
                         </div>
                     </div>
                 </div>
-            </FeedMindLayout>
+            </ManagerLayout>
         </>
     );
 };

@@ -1,10 +1,11 @@
 import { router } from "@inertiajs/react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
-import FeedMindLayout from "../Layouts/FeedMindLayout";
-import Header from "../Layouts/Header";
-
-const ProductsPage = ({ productsFromBack, set = null }) => {
+import Header from "../../Layouts/Header";
+import ManagerLayout from "../../Layouts/ManagerLayout";
+const ProductsPage = ({ productsFromBack, categoryOrder = null }) => {
+    // console.log(randomID);
+    console.log(categoryOrder);
     // console.log(
     //     "ProductsPage rendered with productsFromBack:",
     //     productsFromBack
@@ -228,21 +229,35 @@ const ProductsPage = ({ productsFromBack, set = null }) => {
             </div>
         );
     }
-    if (user.role_id === 1) {
-        window.location.href = "/manager/products";
-        return null;
+    if (user.role_id !== 1) {
+        return (
+            <div className="min-h-screen flex flex-row justify-center items-center bg-[#39344a]">
+                <div className="text-center">
+                    <p className="text-red-400 mb-4">Unauthorized access</p>
+                    <button
+                        onClick={() => router.visit("/unauthorized")}
+                        className="bg-[#a892fe] hover:bg-[#9581fe] text-white px-4 py-2 rounded-lg transition-colors"
+                    >
+                        Go to Unauthorized Page
+                    </button>
+                </div>
+            </div>
+        );
     }
 
     return (
         <>
             <Header title="Products" />
-            <FeedMindLayout user={user}>
+            <ManagerLayout user={user}>
                 <div className="min-h-screen bg-[#39344a] text-white">
                     {/* Header */}
                     <div className="mb-8">
-                        <h1 className="text-3xl font-bold mb-4">Products</h1>
+                        <h1 className="text-2xl font-bold mb-4 text-purple-300 my-5">
+                            All Products
+                        </h1>
+                        <hr className="text-black" />
                         {/* Search Bar */}
-                        <div className="relative max-w-md">
+                        <div className="relative max-w-md mt-3">
                             <input
                                 type="text"
                                 placeholder="Search products..."
@@ -982,7 +997,7 @@ const ProductsPage = ({ productsFromBack, set = null }) => {
                         )}
                     </AnimatePresence>
                 </div>
-            </FeedMindLayout>
+            </ManagerLayout>
         </>
     );
 };

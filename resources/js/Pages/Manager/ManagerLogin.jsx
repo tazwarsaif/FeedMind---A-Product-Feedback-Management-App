@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import Header from "../../Layouts/Header";
 
-function Login() {
+function ManagerLogin() {
     const [mail, setMail] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
@@ -97,6 +97,7 @@ function Login() {
             }
 
             const data = await response.json();
+            console.log(data);
 
             const token = data.auth_token;
             if (!token) {
@@ -107,11 +108,7 @@ function Login() {
             }
 
             localStorage.setItem("token", token);
-            if (data.user.role_id === 1) {
-                router.visit("/manager/dashboard");
-                return;
-            }
-            router.visit("/products");
+            router.visit("/dashboard");
         } catch (error) {
             if (error.response) {
                 const status = error.response.status;
@@ -367,4 +364,4 @@ function Login() {
     );
 }
 
-export default Login;
+export default ManagerLogin;

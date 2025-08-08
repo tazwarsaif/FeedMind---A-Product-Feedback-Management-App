@@ -42,6 +42,7 @@ class ScrapeController extends Controller
                 throw new \Exception("Invalid scrape result.");
             }
             $arr = [];
+
             if (!empty($result['reviews']) && !empty($result['individualRatings'])) {
                 foreach ($result['reviews'] as $i => $review) {
                     $rating = $result['individualRatings'][$i] ?? null;
@@ -55,7 +56,7 @@ class ScrapeController extends Controller
                 }
             }
 
-            return response()->json($arr);
+            return response()->json($result);
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Scraping failed: ' . $e->getMessage()
