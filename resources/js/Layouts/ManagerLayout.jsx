@@ -71,6 +71,7 @@ const FeedMindLayout = ({ children, user }) => {
             console.error("Logout error:", error);
         }
         localStorage.removeItem("token");
+        localStorage.removeItem("categoryOrder");
         window.location.href = "/login";
     };
 

@@ -28,78 +28,76 @@ class ViewController extends Controller
         //dd($request->user());
         return inertia("Conversations");
     }
-    public function getProductsView(Request $request) {
-        if($request->query('search')) {
+    public function getProductsView(Request $request)
+    {
+        // Always generate categoryOrder for pagination
+        $allCategoryNames = Category::inRandomOrder()->pluck('name')->toArray();
+        $chunkSize = 6;
+        $chunkedCategoryNames = array_chunk($allCategoryNames, $chunkSize);
+
+        // --- CASE 1: Search query ---
+        if ($request->query('search')) {
             $searchQuery = $request->query('search');
-            //Here I want to find the products according to the search query and then put all the products in a single category named "Searched Item"
             $products = \App\Models\Product::with([
                 'amazonImages',
                 'amazonReviews',
                 'reviews',
                 'categories'
             ])->where('name', 'like', '%' . $searchQuery . '%')->get();
-            if(strlen($searchQuery) > 50) {
-                $name = 'Searched Item "' . substr($searchQuery, 0, 50) . '..."';
-            }else {
-                $name = 'Searched Item "' . $searchQuery . '"';
-            }
-            // Format products into a single "Searched Item" category
+
+            $name = 'Searched Item "' .
+                    (strlen($searchQuery) > 50 ? substr($searchQuery, 0, 50) . '..."' : $searchQuery . '"');
+
             $result = collect([
                 [
                     'name' => $name,
-                    'products' => $products->map(function ($product) {
-                        return [
-                            'id' => $product->id,
-                            'name' => $product->name,
-                            'price' => $product->price,
-                            'description' => $product->description,
-                            'images' => array_values($product->amazonImages->pluck('image_url')->slice(1)->toArray()),
-                            'amazonReviews' => $product->amazonReviews->map(function ($review) {
-                                return [
-                                    'user' => $review->reviewer_name,
-                                    'rating' => $review->rating,
-                                    'comment' => $review->comment,
-                                ];
-                            })->toArray(),
-                            'inAppReviews' => $product->reviews->map(function ($review) {
-                                return [
-                                    'user' => null,
-                                    'rating' => $review->rating,
-                                    'comment' => $review->comment,
-                                ];
-                            })->toArray(),
-                            'category' => $product->categories->first()?->name ?? null,
-                        ];
-                    })->toArray(),
+                    'products' => $products->map(fn($product) => [
+                        'id' => $product->id,
+                        'name' => $product->name,
+                        'price' => $product->price,
+                        'description' => $product->description,
+                        'images' => array_values($product->amazonImages->pluck('image_url')->slice(1)->toArray()),
+                        'amazonReviews' => $product->amazonReviews->map(fn($review) => [
+                            'user' => $review->reviewer_name,
+                            'rating' => $review->rating,
+                            'comment' => $review->comment,
+                        ])->toArray(),
+                        'inAppReviews' => $product->reviews->map(fn($review) => [
+                            'user' => null,
+                            'rating' => $review->rating,
+                            'comment' => $review->comment,
+                        ])->toArray(),
+                        'category' => $product->categories->first()?->name ?? null,
+                    ])->toArray(),
                 ]
             ]);
 
-            return inertia("ProductsPage", [
-                'productsFromBack' => $result
+            return inertia("Manager/ProductsPage", [
+                'productsFromBack' => $result,
+                'categoryOrder' => $chunkedCategoryNames // Add this line
             ]);
         }
-        $categoryNames = Category::pluck('name')->toArray();
 
-        // Pick a random SuggestedCategorySet (IDs 1 to 10 assumed)
-        $setId = rand(1, 10);
-        $set = SuggestedCategorySet::find($setId);
+        // --- CASE 2: Category query OR random fallback ---
+        $selectedCategoryNames = [];
 
-
-        // Use categories from the set if found and not empty
-        if ($set && !empty($set->categories)) {
-            $categoryNames = $set->categories;
+        if ($request->query('categories')) {
+            // Use categories from query
+            $selectedCategoryNames = explode(',', $request->query('categories'));
+        } else {
+            // No query param, use random
+            $selectedCategoryNames = $chunkedCategoryNames[0] ?? [];
         }
 
-        // Fetch categories with related products and reviews
+        // Fetch only the selected categories with related products
         $categories = Category::with([
                 'products.amazonImages',
                 'products.amazonReviews',
                 'products.reviews'
             ])
-            ->whereIn('name', $categoryNames)
+            ->whereIn('name', $selectedCategoryNames)
             ->get();
 
-        // Format data for response
         $result = $categories->map(function ($category) {
             return [
                 'name' => $category->name,
@@ -109,31 +107,26 @@ class ViewController extends Controller
                         'name' => $product->name,
                         'price' => $product->price,
                         'description' => $product->description,
-                        // Get all images, remove slice(1) if first image needed
                         'images' => array_values($product->amazonImages->pluck('image_url')->slice(1)->toArray()),
-                        'amazonReviews' => $product->amazonReviews->map(function ($review) {
-                            return [
-                                'user' => $review->reviewer_name,
-                                'rating' => $review->rating,
-                                'comment' => $review->comment,
-                            ];
-                        })->toArray(),
-                        'inAppReviews' => $product->reviews->map(function ($review) {
-                            return [
-                                'user' => null,
-                                'rating' => $review->rating,
-                                'comment' => $review->comment,
-                            ];
-                        })->toArray(),
+                        'amazonReviews' => $product->amazonReviews->map(fn($review) => [
+                            'user' => $review->reviewer_name,
+                            'rating' => $review->rating,
+                            'comment' => $review->comment,
+                        ])->toArray(),
+                        'inAppReviews' => $product->reviews->map(fn($review) => [
+                            'user' => null,
+                            'rating' => $review->rating,
+                            'comment' => $review->comment,
+                        ])->toArray(),
                         'category' => $product->categories->first()?->name ?? null,
                     ];
                 })->toArray(),
             ];
         });
 
-        return inertia("ProductsPage", [
+        return inertia("Manager/ProductsPage", [
             'productsFromBack' => $result,
-            'set' => $set ? $set->name : null
+            'categoryOrder' => $chunkedCategoryNames
         ]);
     }
 }

@@ -18,9 +18,9 @@ class ProductController extends Controller
     //'images' => array_values($product->amazonImages->pluck('image_url')->slice(1)->toArray()),
     public function getAllCategoriesWithProducts(Request $request)
     {
-       if ($request->query('search')) {
+        if ($request->query('search')) {
             $searchQuery = $request->query('search');
-            $products = Product::with([
+            $products = \App\Models\Product::with([
                 'amazonImages',
                 'amazonReviews',
                 'reviews',
@@ -63,8 +63,11 @@ class ProductController extends Controller
                 ]
             ]);
 
-            return response()->json($result);
+            return inertia("Manager/ProductsPage", [
+                'productsFromBack' => $result
+            ]);
         }
+
         $allCategoryNames = Category::inRandomOrder()->pluck('name')->toArray();
         $chunkSize = 6;
         $chunkedCategoryNames = array_chunk($allCategoryNames, $chunkSize);
@@ -111,7 +114,11 @@ class ProductController extends Controller
             ];
         });
 
-        return response()->json($result);
+        // 5. Return inertia response:
+        return response()->json( [
+            'productsFromBack' => $result,
+            'categoryOrder' => $chunkedCategoryNames, // all category names in random order
+        ]);
     }
     public function productSearch(Request $request)
     {
@@ -482,31 +489,68 @@ class ProductController extends Controller
             // Start database transaction
             DB::beginTransaction();
 
+            // Get all categories associated with this product BEFORE deletion
+            $productCategories = DB::table('product_categories')
+                ->where('product_id', $product->id)
+                ->pluck('category_id')
+                ->toArray();
+
             // Delete related data
             AmazonReview::where('product_id', $product->id)->delete();
             AmazonImages::where('product_id', $product->id)->delete();
+
+            // Delete product-category relationships
             DB::table('product_categories')->where('product_id', $product->id)->delete();
 
             // Delete the product
             $product->delete();
+
+            // Check each category to see if it has any remaining products
+            $categoriesToDelete = [];
+            foreach ($productCategories as $categoryId) {
+                // Count remaining products in this category
+                $remainingProductsCount = DB::table('product_categories')
+                    ->where('category_id', $categoryId)
+                    ->count();
+
+                // If no products left in this category, mark it for deletion
+                if ($remainingProductsCount === 0) {
+                    $categoriesToDelete[] = $categoryId;
+                }
+            }
+
+            // Delete empty categories
+            if (!empty($categoriesToDelete)) {
+                $deletedCategoryNames = Category::whereIn('id', $categoriesToDelete)->pluck('name')->toArray();
+                Category::whereIn('id', $categoriesToDelete)->delete();
+
+                Log::info('Empty categories deleted after product removal', [
+                    'product_id' => $id,
+                    'deleted_categories' => $deletedCategoryNames,
+                    'category_ids' => $categoriesToDelete
+                ]);
+            }
 
             // Commit the transaction
             DB::commit();
 
             return response()->json([
                 'success' => true,
-                'message' => 'Product deleted successfully'
+                'message' => 'Product deleted successfully',
+                'deleted_categories' => !empty($categoriesToDelete) ? count($categoriesToDelete) : 0
             ], 200);
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Failed to update product: ' . $e->getMessage(), [
-                    'user_id' => Auth::user()->id,
-                    'product_id' => $id,
-                    'trace' => $e->getTraceAsString()
-                ]);
+            Log::error('Failed to delete product: ' . $e->getMessage(), [
+                'user_id' => Auth::user()->id,
+                'product_id' => $id,
+                'trace' => $e->getTraceAsString()
+            ]);
 
             return response()->json([
-                    'error' => 'Failed to update product: ' . $e->getMessage()
-        ], 500);}}
+                'error' => 'Failed to delete product: ' . $e->getMessage()
+            ], 500);
+        }
     }
+}

@@ -1,10 +1,12 @@
 import { router } from "@inertiajs/react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
-import FeedMindLayout from "../Layouts/FeedMindLayout";
-import Header from "../Layouts/Header";
-
-const ProductsPage = ({ productsFromBack, set = null }) => {
+import FeedMindLayout from "../../Layouts/FeedMindLayout";
+import Header from "../../Layouts/Header";
+import Pagination from "../components/Pagination";
+const ProductsPage = ({ productsFromBack = null, categoryOrder = null }) => {
+    // console.log(randomID);
+    console.log(categoryOrder);
     // console.log(
     //     "ProductsPage rendered with productsFromBack:",
     //     productsFromBack
@@ -32,6 +34,17 @@ const ProductsPage = ({ productsFromBack, set = null }) => {
     const [suggestions, setSuggestions] = useState([]);
     const [search, setSearch] = useState("");
     const [isFocused, setIsFocused] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [lastPage, setLastPage] = useState(1);
+
+    useEffect(() => {
+        if (!localStorage.getItem("categoryOrder")) {
+            localStorage.setItem(
+                "categoryOrder",
+                JSON.stringify(categoryOrder)
+            );
+        }
+    }, [categoryOrder]);
 
     useEffect(() => {
         if (!token) {
@@ -67,6 +80,75 @@ const ProductsPage = ({ productsFromBack, set = null }) => {
 
         fetchUser();
     }, [token]);
+
+    useEffect(() => {
+        const searchParams = new URLSearchParams(window.location.search);
+        const searchParam = searchParams.get("search");
+        const page = searchParams.get("page");
+        const categories = searchParams.get("categories");
+
+        if (searchParam) {
+            // Handle search case
+            setSearch(searchParam);
+            setQuery(searchParam);
+            setCurrentPage(1); // Always set to page 1 for searches
+            setLastPage(1); // Search results don't use pagination
+            return;
+        }
+
+        if (!page || !categories) {
+            // Retrieve category order from localStorage
+            const storedOrder = localStorage.getItem("categoryOrder");
+            let firstGroup = "";
+            if (storedOrder) {
+                try {
+                    const parsed = JSON.parse(storedOrder);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        firstGroup = parsed[0].join(",");
+                    }
+                } catch (error) {
+                    console.error(
+                        "Error parsing categoryOrder from localStorage:",
+                        error
+                    );
+                }
+            }
+
+            // Fallback in case localStorage is empty or broken
+            if (!firstGroup) {
+                firstGroup = "kitchen,bharwa";
+            }
+
+            // Redirect with categories from localStorage
+            router.visit(
+                `/products?page=1&categories=${encodeURIComponent(firstGroup)}`,
+                {
+                    replace: true,
+                }
+            );
+            return;
+        } else {
+            // Handle normal pagination case
+            if (page) {
+                setCurrentPage(Number(page));
+            } else {
+                setCurrentPage(1);
+            }
+
+            // Set lastPage based on categoryOrder
+            const storedOrder = localStorage.getItem("categoryOrder");
+            if (storedOrder) {
+                try {
+                    const parsed = JSON.parse(storedOrder);
+                    setLastPage(parsed.length || 1);
+                } catch (error) {
+                    setLastPage(1);
+                }
+            } else {
+                setLastPage(1);
+            }
+        }
+    }, []);
 
     const categories = products;
 
@@ -228,9 +310,20 @@ const ProductsPage = ({ productsFromBack, set = null }) => {
             </div>
         );
     }
-    if (user.role_id === 1) {
-        window.location.href = "/manager/products";
-        return null;
+    if (user.role_id !== 1) {
+        return (
+            <div className="min-h-screen flex flex-row justify-center items-center bg-[#39344a]">
+                <div className="text-center">
+                    <p className="text-red-400 mb-4">Unauthorized access</p>
+                    <button
+                        onClick={() => router.visit("/unauthorized")}
+                        className="bg-[#a892fe] hover:bg-[#9581fe] text-white px-4 py-2 rounded-lg transition-colors"
+                    >
+                        Go to Unauthorized Page
+                    </button>
+                </div>
+            </div>
+        );
     }
 
     return (
@@ -240,9 +333,13 @@ const ProductsPage = ({ productsFromBack, set = null }) => {
                 <div className="min-h-screen bg-[#39344a] text-white">
                     {/* Header */}
                     <div className="mb-8">
-                        <h1 className="text-3xl font-bold mb-4">Products</h1>
+                        <h1 className="text-2xl font-bold mb-4 text-purple-300 my-5">
+                            All Products
+                        </h1>
+                        <hr className="text-black" />
+
                         {/* Search Bar */}
-                        <div className="relative max-w-md">
+                        <div className="relative mt-3">
                             <input
                                 type="text"
                                 placeholder="Search products..."
@@ -278,7 +375,7 @@ const ProductsPage = ({ productsFromBack, set = null }) => {
                             <button
                                 onClick={() => {
                                     // Handle search button click
-                                    router.get(`/products?search=${search}`);
+                                    router.visit(`/products?search=${search}`);
                                 }}
                                 className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-purple-800 hover:bg-purple-700 text-white p-1 rounded-md text-sm w-20 cursor-pointer transition-colors"
                             >
@@ -286,34 +383,137 @@ const ProductsPage = ({ productsFromBack, set = null }) => {
                             </button>
 
                             {isFocused && suggestions.length > 0 && (
-                                <ul className="absolute top-full left-0 w-full bg-[#2c2841] shadow-md z-20 max-h-80 overflow-auto">
-                                    {suggestions.map((item, index) => (
-                                        <li
-                                            key={index}
-                                            className="p-2 cursor-pointer hover:bg-gray-400 flex space-x-2 max-w-2xl border-b border-gray-600"
-                                            onClick={() => {
-                                                setSearch(item); // optional: update field
-                                                setIsFocused(false);
-                                                router.get(
-                                                    `/products?search=${item?.name}`
-                                                );
-                                            }}
-                                        >
-                                            <div>{item?.name}</div>
-                                            <div>{item?.price}</div>
-                                            <div>
-                                                <img
-                                                    src={item?.images[1]}
-                                                    alt={item?.name}
-                                                    className="w-50 h-10 object-cover rounded-md"
-                                                />
-                                            </div>
-                                        </li>
-                                    ))}
-                                </ul>
+                                <div className="absolute top-full left-0 w-full bg-[#2c2841] shadow-md z-20 max-h-80 overflow-auto border border-gray-600 rounded-b-lg">
+                                    <table className="w-full border-0 table-fixed">
+                                        <tbody>
+                                            {suggestions.map((item, index) => (
+                                                <tr
+                                                    key={index}
+                                                    className="cursor-pointer hover:bg-gray-600 border-b border-gray-600 last:border-b-0"
+                                                    onClick={() => {
+                                                        setSearch(item.name);
+                                                        setIsFocused(false);
+                                                        router.get(
+                                                            `/products?search=${encodeURIComponent(
+                                                                item.name
+                                                            )}`
+                                                        );
+                                                    }}
+                                                >
+                                                    <td className="p-2 text-left w-3/5 sm:w-2/3">
+                                                        <div className="break-words hyphens-auto leading-tight text-sm">
+                                                            {item?.name}
+                                                        </div>
+                                                    </td>
+                                                    <td className="p-2 text-right w-1/5 sm:w-1/6">
+                                                        <div className="text-green-400 font-semibold text-xs sm:text-sm break-words">
+                                                            {item?.price}
+                                                        </div>
+                                                    </td>
+                                                    <td className="p-2 text-right w-1/5 sm:w-1/6">
+                                                        {item?.images &&
+                                                            item.images.length >
+                                                                0 && (
+                                                                <img
+                                                                    src={
+                                                                        item
+                                                                            .images[0]
+                                                                    }
+                                                                    alt={
+                                                                        item?.name
+                                                                    }
+                                                                    className="w-8 h-8 sm:w-10 sm:h-8 md:w-12 md:h-10 object-cover rounded-md ml-auto"
+                                                                />
+                                                            )}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
                             )}
                         </div>
                     </div>
+                    {new URLSearchParams(window.location.search).get(
+                        "search"
+                    ) && (
+                        <div className="my-4 flex justify-between items-center">
+                            <button
+                                onClick={() => {
+                                    const storedOrder =
+                                        localStorage.getItem("categoryOrder");
+                                    let firstGroup = "kitchen,music";
+                                    if (storedOrder) {
+                                        try {
+                                            const parsed =
+                                                JSON.parse(storedOrder);
+                                            if (
+                                                Array.isArray(parsed) &&
+                                                parsed.length > 0
+                                            ) {
+                                                firstGroup =
+                                                    parsed[0].join(",");
+                                            }
+                                        } catch (error) {
+                                            console.error(
+                                                "Error parsing categoryOrder:",
+                                                error
+                                            );
+                                        }
+                                    }
+                                    router.visit(
+                                        `/products?page=1&categories=${encodeURIComponent(
+                                            firstGroup
+                                        )}`
+                                    );
+                                }}
+                                className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors flex items-center space-x-2"
+                            >
+                                <svg
+                                    className="w-4 h-4"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                                    />
+                                </svg>
+                                <span>Back to Categories</span>
+                            </button>
+                            <div className="text-sm text-gray-400">
+                                Found{" "}
+                                {categories.reduce(
+                                    (total, cat) => total + cat.products.length,
+                                    0
+                                )}{" "}
+                                results
+                            </div>
+                        </div>
+                    )}
+                    <div className="my-6">
+                        {!new URLSearchParams(window.location.search).get(
+                            "search"
+                        ) && (
+                            <Pagination
+                                currentPage={currentPage ? currentPage : 1}
+                                lastPage={lastPage ? lastPage : 1}
+                                categoryOrder={
+                                    localStorage.getItem("categoryOrder")
+                                        ? JSON.parse(
+                                              localStorage.getItem(
+                                                  "categoryOrder"
+                                              )
+                                          )
+                                        : []
+                                }
+                            />
+                        )}
+                    </div>
+
                     {/* Categories */}
                     <div className="space-y-4">
                         {filteredCategories.map((category) => (
@@ -381,7 +581,14 @@ const ProductsPage = ({ productsFromBack, set = null }) => {
                                                                 className="w-full h-48 object-cover"
                                                             />
                                                             <div className="p-4">
-                                                                <h3 className="font-semibold text-lg mb-2 line-clamp-2">
+                                                                <h3
+                                                                    className="font-semibold text-lg mb-2 line-clamp-2 hover:cursor-pointer hover:underline"
+                                                                    onClick={() =>
+                                                                        openProductModal(
+                                                                            product
+                                                                        )
+                                                                    }
+                                                                >
                                                                     {
                                                                         product.name
                                                                     }
@@ -560,7 +767,7 @@ const ProductsPage = ({ productsFromBack, set = null }) => {
                                                     {selectedProduct.name}
                                                 </h2>
                                                 <p className="text-3xl font-bold text-green-400 mb-4">
-                                                    ${selectedProduct.price}
+                                                    {selectedProduct.price}
                                                 </p>
                                                 <p className="text-gray-300 mb-6">
                                                     {
