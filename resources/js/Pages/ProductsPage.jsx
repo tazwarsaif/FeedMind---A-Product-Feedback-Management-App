@@ -1,9 +1,9 @@
 import { router } from "@inertiajs/react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
-import FeedMindLayout from "../../Layouts/FeedMindLayout";
-import Header from "../../Layouts/Header";
-import Pagination from "../components/Pagination";
+import FeedMindLayout from "../Layouts/FeedMindLayout.jsx";
+import Header from "../Layouts/Header";
+import Pagination from "./components/Pagination";
 const ProductsPage = ({ productsFromBack = null, categoryOrder = null }) => {
     // console.log(randomID);
     console.log(categoryOrder);

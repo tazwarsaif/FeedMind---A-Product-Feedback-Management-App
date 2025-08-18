@@ -396,7 +396,7 @@ const MyProducts = ({ category = null }) => {
                             </div>
                             <div className="-ml-5 md:ml-0 -mt-2">
                                 <button
-                                    className="bg-slate-300 px-3 py-2 text-sm text-purple-800 hover:text-white hover:bg-[#39344a] rounded-lg transition-colors cursor-pointer w-40 flex w-fit items-center"
+                                    className="bg-slate-300 px-3 py-2 text-sm text-purple-800 hover:text-white hover:bg-[#39344a] rounded-lg transition-colors cursor-pointer w-40 flex items-center"
                                     onClick={() =>
                                         (window.location.href =
                                             "/manager/add-product")

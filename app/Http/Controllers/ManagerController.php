@@ -131,5 +131,13 @@ class ManagerController extends Controller
         ]);
     }
 
+    public function analyzeView(Request $request){
+        return inertia("Manager/Analyze");
+    }
+    public function analyzedDataView(Request $request){
+        return inertia("Manager/AnalyzedData", [
+            'reportId' => $request->route('id')
+        ]);
+    }
 
 }

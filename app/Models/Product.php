@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+
 
 class Product extends Model
 {
+    use HasFactory;
     protected $fillable = [
         'user_id',
         'name',
@@ -38,5 +41,9 @@ class Product extends Model
     public function amazonImages()
     {
         return $this->hasMany(AmazonImages::class);
+    }
+    public function analyzedReports()
+    {
+        return $this->hasMany(AnalyzedData::class);
     }
 }

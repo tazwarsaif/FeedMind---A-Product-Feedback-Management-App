@@ -50,7 +50,9 @@ Route::middleware('auth:sanctum')->group(function (){
     Route::put('/products/{id}', [ProductController::class, 'updateProduct']);
     Route::delete('/products/{id}', [ProductController::class, 'deleteProduct']);
     Route::get("/get-my-products",[ProductController::class, "getMyProducts"]);
-
+    Route::get("/get-my-products-for-analyze",[ProductController::class, "getMyProductsForAnalyze"]);
+    Route::get('/analyzed-report/{id}', [ProductController::class, 'getOneProductWithAnalyzedData']);
+    Route::get('/product/analyze/{id}',[ProductController::class, 'generateAnalyzedReport']);
 });
 
 

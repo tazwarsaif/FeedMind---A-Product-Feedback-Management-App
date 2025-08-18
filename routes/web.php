@@ -44,6 +44,8 @@ Route::prefix('manager')->group(function () {
     })->name('manager.scrape');
     Route::get("/add-product",[ManagerController::class,'addProduct'])->name('manager.add-product');
     Route::get("/my-products",[ManagerController::class,'MyProducts'])->name('manager.my-products');
+    Route::get('/analyze', [ManagerController::class, 'analyzeView'])->name('manager.analyze');
+    Route::get('/analyzed-data/{id}', [ManagerController::class, 'analyzedDataView'])->name('manager.analyzed-data');
     // Route::get('/login',[ViewController::class,'loginView'])->name('login');
 });
 

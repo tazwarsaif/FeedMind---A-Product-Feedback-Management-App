@@ -181,7 +181,7 @@ const FeedMindLayout = ({ children, user }) => {
         },
 
         {
-            name: "Reviews",
+            name: "Analyze",
             icon: (
                 <svg
                     className="w-5 h-5"
@@ -193,12 +193,19 @@ const FeedMindLayout = ({ children, user }) => {
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         strokeWidth={2}
-                        d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                        d="M11 11V6m0 5a5 5 0 105 5h0a5 5 0 00-5-5zm8 8l-3-3"
+                    />
+                    <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M7 16v-4m4 4v-1"
                     />
                 </svg>
             ),
-            href: "/manager/reviews",
+            href: "/manager/analyze",
         },
+
         {
             name: "Amazon Scrape",
             icon: (
