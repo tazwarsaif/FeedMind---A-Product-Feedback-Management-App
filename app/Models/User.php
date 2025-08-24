@@ -63,4 +63,19 @@ class User extends Authenticatable
     {
         return $this->hasMany(Review::class);
     }
+    public function analyzedData()
+    {
+        return $this->hasMany(AnalyzedData::class, 'user_id');
+    }
+    public function amazonReviews()
+    {
+        return $this->hasManyThrough(
+            AmazonReview::class,
+            Product::class,
+            'user_id',        // Foreign key on products table...
+            'product_id',     // Foreign key on amazon_reviews table...
+            'id',             // Local key on users table...
+            'id'              // Local key on products table...
+        );
+    }
 }

@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Header from "../../Layouts/Header";
 import ManagerLayout from "../../Layouts/ManagerLayout";
 
@@ -9,10 +9,10 @@ const Analyze = () => {
     const [products, setProducts] = useState([]);
     const [loadingProducts, setLoadingProducts] = useState(true);
     const [error, setError] = useState(null);
-    const [summary, setSummary] = useState("");
     const [summaryLoad, setSummaryLoad] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState("oldestToLatest");
     const [allProducts, setAllProducts] = useState([]);
+    // Remove analyzed_reports state - we'll manage this within products
 
     const fetchProducts = async () => {
         const token = localStorage.getItem("token");
@@ -37,8 +37,8 @@ const Analyze = () => {
         }
     };
 
-    // Function to generate analysis report for a product
-    const generateAnalysis = async (productId) => {
+    // Improved function to generate analysis report for a product
+    const generateAnalysis = useCallback(async (productId) => {
         const token = localStorage.getItem("token");
         if (!token) return;
 
@@ -46,16 +46,45 @@ const Analyze = () => {
         try {
             const response = await axios.get(
                 `http://127.0.0.1:8000/api/product/analyze/${productId}`,
-                {},
                 {
                     headers: { Authorization: `Bearer ${token}` },
                 }
             );
 
-            if (response.status === 200 && response.data.analysis) {
-                // Update the product with the analysis
-                await fetchProducts(); // Assuming you have this function
-                console.log("Analysis generated successfully");
+            if (response.status === 201) {
+                const newReport = response.data.analysis;
+
+                // Update products state to include the new report
+                setProducts((prevProducts) =>
+                    prevProducts.map((product) =>
+                        product.id === productId
+                            ? {
+                                  ...product,
+                                  analyzed_reports: [
+                                      ...(product.analyzed_reports || []),
+                                      newReport,
+                                  ],
+                              }
+                            : product
+                    )
+                );
+
+                // Also update allProducts if needed for filtering
+                setAllProducts((prevProducts) =>
+                    prevProducts.map((product) =>
+                        product.id === productId
+                            ? {
+                                  ...product,
+                                  analyzed_reports: [
+                                      ...(product.analyzed_reports || []),
+                                      newReport,
+                                  ],
+                              }
+                            : product
+                    )
+                );
+
+                console.log("Analysis generated successfully:", newReport);
             }
         } catch (err) {
             console.error("Failed to generate analysis:", err);
@@ -63,10 +92,10 @@ const Analyze = () => {
         } finally {
             setSummaryLoad(false);
         }
-    };
+    }, []);
 
-    // Function to delete a product
-    const deleteProduct = async (productId) => {
+    // Improved function to delete a product
+    const deleteProduct = useCallback(async (productId) => {
         const token = localStorage.getItem("token");
         if (!token) return;
 
@@ -78,15 +107,69 @@ const Analyze = () => {
                 }
             );
 
-            // Remove product from state
+            // Remove product from both products and allProducts state
             setProducts((prevProducts) =>
+                prevProducts.filter((product) => product.id !== productId)
+            );
+            setAllProducts((prevProducts) =>
                 prevProducts.filter((product) => product.id !== productId)
             );
         } catch (err) {
             console.error("Failed to delete product:", err);
             setError("Failed to delete product");
         }
-    };
+    }, []);
+
+    // Improved function to delete a report
+    const handleDeleteReport = useCallback(async (reportId, productId) => {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        try {
+            await axios.delete(
+                `http://127.0.0.1:8000/api/reports/${reportId}`,
+                {
+                    headers: { Authorization: `Bearer ${token}` },
+                }
+            );
+
+            // Remove report from the specific product in both states
+            const updateProductReports = (products) =>
+                products.map((product) =>
+                    product.id === productId
+                        ? {
+                              ...product,
+                              analyzed_reports: (
+                                  product.analyzed_reports || []
+                              ).filter((report) => report.id !== reportId),
+                          }
+                        : product
+                );
+
+            setProducts(updateProductReports);
+            setAllProducts(updateProductReports);
+        } catch (err) {
+            console.error("Error deleting report:", err);
+            setError("Failed to delete report");
+        }
+    }, []);
+
+    // Function to get current product's reports for modal display
+    const getCurrentProductReports = useCallback(
+        (productId) => {
+            const product = products.find((p) => p.id === productId);
+            return product?.analyzed_reports || [];
+        },
+        [products]
+    );
+
+    // Clear error after some time
+    useEffect(() => {
+        if (error) {
+            const timer = setTimeout(() => setError(null), 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [error]);
 
     useEffect(() => {
         // Fetch user info
@@ -169,13 +252,18 @@ const Analyze = () => {
                         </div>
                     </div>
 
+                    {/* Error Display */}
+                    {error && (
+                        <div className="mb-4 p-3 bg-red-600/20 border border-red-600 rounded-lg">
+                            <p className="text-red-400">{error}</p>
+                        </div>
+                    )}
+
                     {loadingProducts ? (
                         <div className="flex items-center space-x-2 text-purple-300">
                             <div className="w-6 h-6 border-4 border-[#a892fe] border-t-transparent rounded-full animate-spin"></div>
                             <span>Loading products...</span>
                         </div>
-                    ) : error ? (
-                        <div className="text-red-400">{error}</div>
                     ) : products.length === 0 ? (
                         <div className="text-gray-400">No products found.</div>
                     ) : (
@@ -271,13 +359,13 @@ const Analyze = () => {
                                 <div className="inline-flex items-center cursor-pointer transition-colors space-x-2 ml-4">
                                     {/* Analysis Button */}
                                     <div
-                                        onClick={() =>
+                                        onClick={() => {
                                             document
                                                 .getElementById(
                                                     `analysis_modal_${product.id}`
                                                 )
-                                                .showModal()
-                                        }
+                                                .showModal();
+                                        }}
                                         className="bg-blue-600 hover:bg-blue-700 p-2 px-3 text-white rounded-lg cursor-pointer"
                                         title="Generate Analysis"
                                     >
@@ -376,76 +464,146 @@ const Analyze = () => {
                                             </div>
                                         </div>
 
-                                        {/* making reports list */}
-
-                                        <ul className="list bg-[#5e557a] rounded-box shadow-md text-slate ">
+                                        {/* Reports List */}
+                                        <ul className="list bg-[#5e557a] rounded-box shadow-md text-slate">
                                             <li className="p-4 pb-2 text-xs opacity-60 tracking-wide">
                                                 Recent Generated Reports
                                             </li>
-                                            {product.analyzed_reports &&
-                                                product.analyzed_reports.map(
-                                                    (report, index) => (
-                                                        <li
-                                                            key={index}
-                                                            className="list-row"
+                                            {getCurrentProductReports(
+                                                product.id
+                                            ).map((report, index) => (
+                                                <li
+                                                    key={report.id || index}
+                                                    className="list-row hover:bg-[#554e6b] p-4 flex justify-between items-start space-x-4 cursor-pointer"
+                                                >
+                                                    <div>
+                                                        <div
+                                                            onClick={() =>
+                                                                (window.location.href = `/manager/analyzed-data/${report.id}`)
+                                                            }
+                                                            className="hover:underline"
                                                         >
-                                                            <div>
-                                                                <div
-                                                                    onClick={() =>
-                                                                        (window.location.href = `/manager/analyzed-data/${report.id}`)
-                                                                    }
-                                                                    className="hover:underline"
+                                                            {report.title}
+                                                        </div>
+                                                        <div className="text-xs uppercase font-semibold opacity-60">
+                                                            {
+                                                                report.created_at?.split(
+                                                                    "T"
+                                                                )[0]
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                    <p className="list-col-wrap text-xs">
+                                                        {report.summary ||
+                                                            "No summary available"}
+                                                    </p>
+                                                    <div className="flex flex-col space-y-3">
+                                                        <button
+                                                            className="btn btn-square btn-ghost"
+                                                            onClick={() =>
+                                                                (window.location.href = `/manager/analyzed-data/${report.id}`)
+                                                            }
+                                                        >
+                                                            <svg
+                                                                className="size-[1.2em]"
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                viewBox="0 0 24 24"
+                                                                aria-hidden="true"
+                                                            >
+                                                                <g
+                                                                    fill="none"
+                                                                    stroke="currentColor"
+                                                                    strokeWidth="2"
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
                                                                 >
-                                                                    {
-                                                                        report.title
-                                                                    }
-                                                                </div>
-                                                                <div className="text-xs uppercase font-semibold opacity-60">
-                                                                    {
-                                                                        report.created_at.split(
-                                                                            "T"
-                                                                        )[0]
-                                                                    }
+                                                                    <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V9l-5-6z" />
+                                                                    <path d="M14 3v6h6" />
+                                                                    <path d="M9 13h6" />
+                                                                    <path d="M9 17h6" />
+                                                                </g>
+                                                            </svg>
+                                                        </button>
+
+                                                        <button
+                                                            className="btn btn-square btn-ghost"
+                                                            onClick={() =>
+                                                                document
+                                                                    .getElementById(
+                                                                        `delete_report_${report.id}`
+                                                                    )
+                                                                    .showModal()
+                                                            }
+                                                        >
+                                                            <svg
+                                                                className="size-[1.2em]"
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                viewBox="0 0 24 24"
+                                                                aria-hidden="true"
+                                                            >
+                                                                <g
+                                                                    fill="none"
+                                                                    stroke="currentColor"
+                                                                    strokeWidth="2"
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                >
+                                                                    <path d="M3 6h18" />
+                                                                    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                                                                    <path d="M10 11v6" />
+                                                                    <path d="M14 11v6" />
+                                                                    <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                                                                </g>
+                                                            </svg>
+                                                        </button>
+
+                                                        {/* Delete Report Modal */}
+                                                        <dialog
+                                                            id={`delete_report_${report.id}`}
+                                                            className="modal modal-bottom sm:modal-middle"
+                                                        >
+                                                            <div className="modal-box bg-[#554e6b]">
+                                                                <h3 className="font-bold text-lg">
+                                                                    You sure you
+                                                                    want to
+                                                                    delete your
+                                                                    report?
+                                                                </h3>
+
+                                                                <div className="modal-action">
+                                                                    <form method="dialog">
+                                                                        <button className="btn">
+                                                                            No
+                                                                        </button>
+                                                                    </form>
+                                                                    <button
+                                                                        className="btn btn-error text-white"
+                                                                        onClick={(
+                                                                            e
+                                                                        ) => {
+                                                                            e.preventDefault();
+                                                                            handleDeleteReport(
+                                                                                report.id,
+                                                                                product.id
+                                                                            );
+                                                                            document
+                                                                                .getElementById(
+                                                                                    `delete_report_${report.id}`
+                                                                                )
+                                                                                .close();
+                                                                        }}
+                                                                    >
+                                                                        Delete
+                                                                    </button>
                                                                 </div>
                                                             </div>
-                                                            <p className="list-col-wrap text-xs">
-                                                                {report.summary ||
-                                                                    "No summary available"}
-                                                            </p>
-                                                            <button
-                                                                className="btn btn-square btn-ghost"
-                                                                onClick={() =>
-                                                                    (window.location.href = `/manager/analyzed-data/${report.id}`)
-                                                                }
-                                                            >
-                                                                <svg
-                                                                    className="size-[1.2em]"
-                                                                    xmlns="http://www.w3.org/2000/svg"
-                                                                    viewBox="0 0 24 24"
-                                                                    aria-hidden="true"
-                                                                >
-                                                                    <g
-                                                                        fill="none"
-                                                                        stroke="currentColor"
-                                                                        strokeWidth="2"
-                                                                        strokeLinecap="round"
-                                                                        strokeLinejoin="round"
-                                                                    >
-                                                                        {/* Document with folded corner */}
-                                                                        <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V9l-5-6z" />
-                                                                        <path d="M14 3v6h6" />
-                                                                        {/* Text lines */}
-                                                                        <path d="M9 13h6" />
-                                                                        <path d="M9 17h6" />
-                                                                    </g>
-                                                                </svg>
-                                                            </button>
-                                                        </li>
-                                                    )
-                                                )}
+                                                        </dialog>
+                                                    </div>
+                                                </li>
+                                            ))}
                                         </ul>
 
-                                        {summaryLoad === true && (
+                                        {summaryLoad && (
                                             <div className="text-center py-8">
                                                 <span className="loading loading-bars loading-xl"></span>
                                                 <p className="mt-4 text-gray-400">
@@ -454,34 +612,23 @@ const Analyze = () => {
                                             </div>
                                         )}
 
-                                        {product.analysis &&
-                                            summaryLoad === false && (
-                                                <div className="space-y-4">
-                                                    <div className="prose prose-invert max-w-none">
-                                                        {product.analysis}
-                                                    </div>
-                                                </div>
-                                            )}
-
                                         <div className="modal-action">
-                                            {!summaryLoad &&
-                                                !product.analysis && (
-                                                    <button
-                                                        className="btn bg-violet-300 border-purple-400 hover:text-white hover:bg-[#39344a]"
-                                                        onClick={() =>
-                                                            generateAnalysis(
-                                                                product.id
-                                                            )
-                                                        }
-                                                    >
-                                                        Generate Analysis
-                                                    </button>
-                                                )}
+                                            {!summaryLoad && (
+                                                <button
+                                                    className="btn bg-violet-300 border-purple-400 hover:text-white hover:bg-[#39344a]"
+                                                    onClick={() =>
+                                                        generateAnalysis(
+                                                            product.id
+                                                        )
+                                                    }
+                                                >
+                                                    Generate Analysis
+                                                </button>
+                                            )}
 
                                             <form
                                                 method="dialog"
                                                 className="flex space-x-3"
-                                                onSubmit={() => setSummary("")}
                                             >
                                                 <button className="btn">
                                                     Close
@@ -491,116 +638,7 @@ const Analyze = () => {
                                     </div>
                                 </dialog>
 
-                                {/* Report Detail Modals */}
-                                {product.analyzed_reports &&
-                                    product.analyzed_reports.map(
-                                        (report, index) => (
-                                            <dialog
-                                                key={report.id || index}
-                                                id={`report_detail_${report.id}`}
-                                                className="modal modal-bottom sm:modal-middle"
-                                            >
-                                                <div className="modal-box bg-[#39344a] text-white max-w-4xl max-h-[80vh]">
-                                                    <h3 className="font-bold text-lg mb-4 text-purple-300">
-                                                        {report.title}
-                                                    </h3>
-
-                                                    {/* Report Header */}
-                                                    <div className="mb-4 p-3 bg-[#2c2841] rounded-lg">
-                                                        <div className="flex justify-between items-center">
-                                                            <div className="flex items-center space-x-4">
-                                                                {report.rating && (
-                                                                    <div className="text-center">
-                                                                        <div className="text-2xl font-bold text-purple-400">
-                                                                            {parseFloat(
-                                                                                report.rating
-                                                                            ).toFixed(
-                                                                                1
-                                                                            )}
-                                                                        </div>
-                                                                        <div className="text-xs text-gray-400">
-                                                                            Rating
-                                                                        </div>
-                                                                    </div>
-                                                                )}
-                                                                <div>
-                                                                    <div className="text-sm text-gray-400">
-                                                                        Generated
-                                                                        on
-                                                                    </div>
-                                                                    <div className="font-medium">
-                                                                        {new Date(
-                                                                            report.created_at ||
-                                                                                report.updated_at
-                                                                        ).toLocaleDateString(
-                                                                            "en-US",
-                                                                            {
-                                                                                year: "numeric",
-                                                                                month: "long",
-                                                                                day: "numeric",
-                                                                            }
-                                                                        )}
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                            {report.generated_by && (
-                                                                <div className="text-right">
-                                                                    <div className="text-sm text-gray-400">
-                                                                        Generated
-                                                                        by
-                                                                    </div>
-                                                                    <div className="font-medium">
-                                                                        {report.generated_by_name ||
-                                                                            `User #${report.generated_by}`}
-                                                                    </div>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Report Summary */}
-                                                    <div className="mb-4 p-4 bg-[#554e6b]/30 rounded-lg border-l-4 border-purple-500">
-                                                        <h4 className="font-semibold text-purple-300 mb-2">
-                                                            Executive Summary
-                                                        </h4>
-                                                        <p className="text-gray-300 leading-relaxed">
-                                                            {report.summary}
-                                                        </p>
-                                                    </div>
-
-                                                    {/* Full Report */}
-                                                    <div className="overflow-y-auto max-h-96">
-                                                        <h4 className="font-semibold text-purple-300 mb-3">
-                                                            Detailed Analysis
-                                                        </h4>
-                                                        <div className="prose prose-invert prose-purple max-w-none">
-                                                            <div
-                                                                className="text-gray-300 leading-relaxed whitespace-pre-wrap"
-                                                                dangerouslySetInnerHTML={{
-                                                                    __html:
-                                                                        report.full_report?.replace(
-                                                                            /\n/g,
-                                                                            "<br>"
-                                                                        ) ||
-                                                                        "No detailed report available.",
-                                                                }}
-                                                            />
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="modal-action mt-6 pt-4 border-t border-gray-600">
-                                                        <form method="dialog">
-                                                            <button className="btn">
-                                                                Close
-                                                            </button>
-                                                        </form>
-                                                    </div>
-                                                </div>
-                                            </dialog>
-                                        )
-                                    )}
-
-                                {/* Delete Modal */}
+                                {/* Delete Product Modal */}
                                 <dialog
                                     id={`delete_${product.id}`}
                                     className="modal modal-bottom sm:modal-middle"

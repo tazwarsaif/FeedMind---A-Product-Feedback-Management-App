@@ -21,6 +21,7 @@ const AnalyzedData = ({ reportId = null }) => {
     const [summary, setSummary] = useState("");
     const [summaryLoad, setSummaryLoad] = useState(false);
     const [ratingStats, setRatingStats] = useState([]);
+    const [downloadingPDF, setDownloadingPDF] = useState(false);
 
     // Colors for the pie chart
     const RATING_COLORS = {
@@ -152,6 +153,67 @@ const AnalyzedData = ({ reportId = null }) => {
         }
     }, [user]);
 
+    const downloadPDF = async () => {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        setDownloadingPDF(true);
+
+        try {
+            const response = await axios.get(
+                `http://127.0.0.1:8000/api/download-report-pdf/${reportId}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        Accept: "application/pdf",
+                    },
+                    responseType: "blob", // Important for binary data
+                }
+            );
+
+            // Create blob link to download
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement("a");
+            link.href = url;
+
+            // Get filename from response headers or create default
+            const contentDisposition = response.headers["content-disposition"];
+            let filename = "product-analysis-report.pdf";
+            if (contentDisposition) {
+                const filenameMatch = contentDisposition.match(
+                    /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/
+                );
+                if (filenameMatch && filenameMatch[1]) {
+                    filename = filenameMatch[1].replace(/['"]/g, "");
+                }
+            }
+
+            link.setAttribute("download", filename);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+        } catch (err) {
+            console.error("Failed to download PDF:", err);
+            setError("Failed to download PDF report");
+
+            // Show user-friendly error
+            if (err.response?.status === 404) {
+                alert("Report not found. Please try again.");
+            } else if (err.response?.status === 500) {
+                alert(
+                    "Server error while generating PDF. Please try again later."
+                );
+            } else {
+                alert(
+                    "Failed to download PDF. Please check your connection and try again."
+                );
+            }
+        } finally {
+            setDownloadingPDF(false);
+        }
+    };
+
     if (loadingUser) {
         return (
             <div className="min-h-screen flex flex-row justify-center items-center bg-[#39344a]">
@@ -241,6 +303,41 @@ const AnalyzedData = ({ reportId = null }) => {
             <Header title={"Analyze"} />
             <ManagerLayout user={user}>
                 <div className="p-6 bg-[#39344a] min-h-screen">
+                    <div className="mb-6 flex justify-end">
+                        <button
+                            onClick={downloadPDF}
+                            disabled={downloadingPDF}
+                            className={`px-6 py-2 rounded-lg flex items-center gap-2 transition-colors ${
+                                downloadingPDF
+                                    ? "bg-gray-500 cursor-not-allowed"
+                                    : "bg-green-600 hover:bg-green-700"
+                            } text-white`}
+                        >
+                            {downloadingPDF ? (
+                                <>
+                                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                    Generating PDF...
+                                </>
+                            ) : (
+                                <>
+                                    <svg
+                                        className="w-5 h-5"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                        />
+                                    </svg>
+                                    Download PDF Report
+                                </>
+                            )}
+                        </button>
+                    </div>
                     {/* Header Section */}
                     <div className="mb-8">
                         <h1 className="text-3xl font-bold text-purple-300 mb-2">

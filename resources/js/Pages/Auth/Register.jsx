@@ -7,6 +7,7 @@ import Header from "../../Layouts/Header";
 const Register = () => {
     const [name, setName] = useState("");
     const [mail, setMail] = useState("");
+    const [selectedRole, setSelectedRole] = useState(null);
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [formErrors, setFormErrors] = useState({});
@@ -124,6 +125,7 @@ const Register = () => {
             name,
             password,
             email: mail,
+            role_id: selectedRole,
             password_confirmation: passwordConfirmation,
         };
         try {
@@ -299,6 +301,49 @@ const Register = () => {
                                     onChange={(e) => setName(e.target.value)}
                                     required
                                 />
+                            </div>
+                            <div>
+                                <label
+                                    className="block text-gray-300 text-sm font-bold mb-2"
+                                    htmlFor="role"
+                                >
+                                    Select Role
+                                </label>
+                                <div className="mb-4 flex space-x-2">
+                                    <label className="flex space-x-2">
+                                        <input
+                                            type="radio"
+                                            name="role"
+                                            value="2"
+                                            className="radio bg-[#a892fe]"
+                                            onChange={(e) =>
+                                                setSelectedRole(e.target.value)
+                                            }
+                                        />
+                                        <p className="text-l text-gray-300">
+                                            Client
+                                        </p>
+                                    </label>
+                                    <br />
+
+                                    <label className="flex space-x-2">
+                                        <input
+                                            type="radio"
+                                            name="role"
+                                            value="1"
+                                            className="radio bg-[#a892fe]"
+                                            onChange={(e) =>
+                                                setSelectedRole(e.target.value)
+                                            }
+                                        />
+                                        <p className="text-l text-gray-300">
+                                            Event Planner
+                                        </p>
+                                    </label>
+                                    <br />
+
+                                    {/* <p>Selected Role ID: {selectedRole}</p> */}
+                                </div>
                             </div>
                             <div>
                                 <label

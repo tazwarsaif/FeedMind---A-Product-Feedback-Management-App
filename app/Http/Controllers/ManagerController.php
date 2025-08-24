@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Models\Product;
 use App\Models\SuggestedCategorySet;
 use Illuminate\Http\Request;
 
@@ -35,11 +36,12 @@ class ManagerController extends Controller
         $allCategoryNames = Category::inRandomOrder()->pluck('name')->toArray();
         $chunkSize = 6;
         $chunkedCategoryNames = array_chunk($allCategoryNames, $chunkSize);
+        $lastDatabaseUpdated = Product::latest('updated_at')->value('updated_at');
 
         // --- CASE 1: Search query ---
         if ($request->query('search')) {
             $searchQuery = $request->query('search');
-            $products = \App\Models\Product::with([
+            $products = Product::with([
                 'amazonImages',
                 'amazonReviews',
                 'reviews',
@@ -75,7 +77,8 @@ class ManagerController extends Controller
 
             return inertia("Manager/ProductsPage", [
                 'productsFromBack' => $result,
-                'categoryOrder' => $chunkedCategoryNames // Add this line
+                'categoryOrder' => $chunkedCategoryNames, // Add this line
+                'lastDatabaseUpdated' => $lastDatabaseUpdated,
             ]);
         }
 
@@ -127,7 +130,8 @@ class ManagerController extends Controller
 
         return inertia("Manager/ProductsPage", [
             'productsFromBack' => $result,
-            'categoryOrder' => $chunkedCategoryNames
+            'categoryOrder' => $chunkedCategoryNames,
+            'lastDatabaseUpdated' => $lastDatabaseUpdated
         ]);
     }
 

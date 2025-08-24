@@ -5,6 +5,7 @@ const AIChatInterface = ({ conversation }) => {
     const token = localStorage.getItem("token");
     const [summary, setSummary] = useState("");
     const [summaryLoad, setSummaryLoad] = useState(false);
+    console.log("Here", conversation);
     const getInitialMessages = () => {
         if (
             conversation &&

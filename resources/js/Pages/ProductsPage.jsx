@@ -4,7 +4,11 @@ import { useEffect, useRef, useState } from "react";
 import FeedMindLayout from "../Layouts/FeedMindLayout.jsx";
 import Header from "../Layouts/Header";
 import Pagination from "./components/Pagination";
-const ProductsPage = ({ productsFromBack = null, categoryOrder = null }) => {
+const ProductsPage = ({
+    productsFromBack = null,
+    categoryOrder = null,
+    lastDatabaseUpdated = null,
+}) => {
     // console.log(randomID);
     console.log(categoryOrder);
     // console.log(
@@ -43,6 +47,20 @@ const ProductsPage = ({ productsFromBack = null, categoryOrder = null }) => {
                 "categoryOrder",
                 JSON.stringify(categoryOrder)
             );
+        }
+
+        const lastUpdated = localStorage.getItem("lastUpdated");
+        const now = Date.now(); // milliseconds since epoch
+
+        if (!lastUpdated) {
+            localStorage.setItem("lastUpdated", now.toString());
+        } else if (now - parseInt(lastUpdated, 10) > 60 * 60 * 1000) {
+            localStorage.removeItem("categoryOrder");
+            localStorage.removeItem("lastUpdated");
+            localStorage.setItem("lastUpdated", now.toString());
+            router.visit("/manager/products", {
+                replace: true,
+            });
         }
     }, [categoryOrder]);
 
@@ -310,7 +328,7 @@ const ProductsPage = ({ productsFromBack = null, categoryOrder = null }) => {
             </div>
         );
     }
-    if (user.role_id !== 1) {
+    if (user.role_id !== 2) {
         return (
             <div className="min-h-screen flex flex-row justify-center items-center bg-[#39344a]">
                 <div className="text-center">

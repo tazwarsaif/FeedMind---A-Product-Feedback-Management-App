@@ -10,6 +10,7 @@ const ChatPage = () => {
     const [conversation, setConversation] = useState(null);
     const pathname = window.location.pathname; // "/feedgpt/2"
     const parts = pathname.split("/");
+    
     const conversationId = parts[2];
 
     useEffect(() => {
@@ -58,6 +59,7 @@ const ChatPage = () => {
                     setConversation(null);
                 }
             } catch (error) {
+                console.error("Error fetching conversation:", error);
                 setConversation(null);
             }
         };

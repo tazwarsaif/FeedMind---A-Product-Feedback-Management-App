@@ -9,7 +9,8 @@ const ChatPage = () => {
     const [conversation, setConversation] = useState(null);
     const pathname = window.location.pathname; // "/feedgpt/2"
     const parts = pathname.split("/");
-    const conversationId = parts[2];
+    console.log(parts);
+    const conversationId = parts[3];
 
     useEffect(() => {
         if (!token) {

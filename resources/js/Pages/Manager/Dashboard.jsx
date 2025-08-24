@@ -140,10 +140,10 @@ const Dashboard = () => {
                                     Total Reviews
                                 </p>
                                 <p className="text-2xl font-bold text-white">
-                                    1,247
+                                    {user?.total_reviews}
                                 </p>
                                 <p className="text-green-400 text-xs">
-                                    +12% from last month
+                                    Last Review: {user?.first_review_time_diff}
                                 </p>
                             </div>
                             <div className="w-12 h-12 bg-[#a892fe]/10 rounded-lg flex items-center justify-center">
@@ -171,10 +171,10 @@ const Dashboard = () => {
                                     Active Products
                                 </p>
                                 <p className="text-2xl font-bold text-white">
-                                    45
+                                    {user?.number_of_products}
                                 </p>
                                 <p className="text-blue-400 text-xs">
-                                    3 new this week
+                                    Last Added: {user?.last_product_time_diff}
                                 </p>
                             </div>
                             <div className="w-12 h-12 bg-blue-500/10 rounded-lg flex items-center justify-center">
@@ -202,9 +202,16 @@ const Dashboard = () => {
                                     Average Rating
                                 </p>
                                 <p className="text-2xl font-bold text-white">
-                                    4.2
+                                    {user?.average_rating}
                                 </p>
-                                <p className="text-yellow-400 text-xs">★★★★☆</p>
+                                <p className="text-yellow-400 text-xs">
+                                    {"★".repeat(
+                                        Math.round(user?.average_rating)
+                                    )}
+                                    {"☆".repeat(
+                                        5 - Math.round(user?.average_rating)
+                                    )}
+                                </p>
                             </div>
                             <div className="w-12 h-12 bg-yellow-500/10 rounded-lg flex items-center justify-center">
                                 <svg
@@ -225,7 +232,7 @@ const Dashboard = () => {
                                     AI Insights
                                 </p>
                                 <p className="text-2xl font-bold text-white">
-                                    23
+                                    {user?.number_of_analyzed_products}
                                 </p>
                                 <p className="text-purple-400 text-xs">
                                     New suggestions
@@ -257,32 +264,79 @@ const Dashboard = () => {
                             Recent Reviews
                         </h3>
                         <div className="space-y-4">
-                            {[1, 2, 3].map((i) => (
+                            {user?.recent_reviews.map((review) => (
                                 <div
-                                    key={i}
-                                    className="flex items-start space-x-3 p-3 bg-[#39344a] rounded-lg"
+                                    key={review.id}
+                                    className="flex items-start space-x-3 p-3 bg-[#39344a] rounded-lg cursor-pointer"
+                                    onClick={() =>
+                                        document
+                                            .getElementById(
+                                                `review_modal_${review.id}`
+                                            )
+                                            .showModal()
+                                    }
                                 >
-                                    <div className="w-8 h-8 bg-[#a892fe] rounded-full flex items-center justify-center flex-shrink-0">
-                                        <span className="text-white text-xs font-semibold">
-                                            U{i}
-                                        </span>
-                                    </div>
                                     <div className="flex-1">
                                         <p className="text-white text-sm font-medium">
-                                            Product Review #{i}
+                                            Product Review #{review.id}
                                         </p>
                                         <p className="text-gray-400 text-xs">
-                                            Great product, very satisfied with
-                                            the quality...
+                                            {review.comment.length > 100
+                                                ? review.comment.substring(
+                                                      0,
+                                                      100
+                                                  ) + "..."
+                                                : review.comment}
                                         </p>
                                         <div className="flex items-center space-x-2 mt-1">
                                             <div className="flex text-yellow-400">
-                                                {"★".repeat(5)}
+                                                {"★".repeat(
+                                                    Math.round(review.rating)
+                                                )}
+                                                {"☆".repeat(
+                                                    5 -
+                                                        Math.round(
+                                                            review.rating
+                                                        )
+                                                )}
                                             </div>
                                             <span className="text-gray-500 text-xs">
-                                                2 hours ago
+                                                {new Date(
+                                                    review.created_at
+                                                ).toLocaleDateString()}
                                             </span>
                                         </div>
+                                        <dialog
+                                            id={`review_modal_${review.id}`}
+                                            className="modal"
+                                        >
+                                            <div className="modal-box bg-[#39344a] text-white">
+                                                <form method="dialog">
+                                                    {/* if there is a button in form, it will close the modal */}
+                                                    <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+                                                        ✕
+                                                    </button>
+                                                </form>
+                                                <h3 className="font-bold text-lg">
+                                                    <div className="flex text-yellow-400">
+                                                        {"★".repeat(
+                                                            Math.round(
+                                                                review.rating
+                                                            )
+                                                        )}
+                                                        {"☆".repeat(
+                                                            5 -
+                                                                Math.round(
+                                                                    review.rating
+                                                                )
+                                                        )}
+                                                    </div>
+                                                </h3>
+                                                <p className="py-4">
+                                                    {review.comment}
+                                                </p>
+                                            </div>
+                                        </dialog>
                                     </div>
                                 </div>
                             ))}
@@ -295,12 +349,10 @@ const Dashboard = () => {
                         </h3>
                         <div className="grid grid-cols-2 gap-4">
                             <button
-                                className="bg-[#a892fe] hover:bg-[#9581fe] text-white p-4 rounded-lg transition-colors text-left"
-                                onClick={() =>
-                                    document
-                                        .getElementById("add_product_modal")
-                                        .showModal()
-                                }
+                                className="bg-[#a892fe] hover:bg-[#9581fe] text-white p-4 rounded-lg transition-colors text-left cursor-pointer"
+                                onClick={() => {
+                                    router.visit("/manager/add-product");
+                                }}
                             >
                                 <svg
                                     className="w-6 h-6 mb-2"
@@ -320,132 +372,60 @@ const Dashboard = () => {
                                     Create new product
                                 </p>
                             </button>
-                            <dialog
-                                id={`add_product_modal`}
-                                className="modal modal-bottom sm:modal-middle"
-                            >
-                                <div className="modal-box flex flex-col gap-4 bg-[#39344a] text-white">
-                                    <div className="flex flex-col gap-2">
-                                        <label htmlFor="jobtitle">
-                                            Job Title:
-                                        </label>
-                                        <input
-                                            className="input input-neutral w-full text-[#39344a]"
-                                            type="text"
-                                        />
-                                    </div>
-                                    <div className="flex flex-col gap-2">
-                                        <label htmlFor="jobcompany">
-                                            Company Name:
-                                        </label>
-                                        <input
-                                            className="input input-neutral w-full text-[#39344a]"
-                                            type="text"
-                                        ></input>
-                                    </div>
-                                    <div className="flex flex-col gap-2">
-                                        <label htmlFor="jobdescription">
-                                            Description:
-                                        </label>
-                                        <textarea
-                                            className="textarea textarea-bordered w-full text-[#39344a]"
-                                            placeholder="Job description"
-                                        ></textarea>
-                                    </div>
-                                    <div className="flex flex-col gap-2">
-                                        <label htmlFor="jobdeadline">
-                                            Deadline:
-                                        </label>
-                                        <input
-                                            className="input input-neutral w-full text-[#39344a]"
-                                            type="date"
-                                        ></input>
-                                    </div>
-
-                                    <div className="flex flex-col gap-2">
-                                        <label htmlFor="jobsalary">
-                                            Salary:
-                                        </label>
-                                        <input
-                                            className="input input-neutral w-full text-[#39344a]"
-                                            type="number"
-                                        ></input>
-                                    </div>
-                                    <div className="flex flex-col gap-2">
-                                        <label htmlFor="joblocation">
-                                            Location:
-                                        </label>
-                                        <input
-                                            className="input input-neutral w-full text-[#39344a]"
-                                            type="text"
-                                        ></input>
-                                    </div>
-                                    <div className="flex flex-col gap-2">
-                                        <label htmlFor="jobcategory">
-                                            Category:
-                                        </label>
-                                        <input
-                                            className="input input-neutral w-full text-[#39344a]"
-                                            type="text"
-                                        ></input>
-                                    </div>
-
-                                    <div className="modal-action space-x-2">
-                                        <button className="btn bg-[#a892fe] hover:bg-[#9581fe] border-none text-[#39344a]">
-                                            Save Changes
-                                        </button>
-                                        <form method="dialog">
-                                            {/* if there is a button in form, it will close the modal */}
-                                            <button className="btn">
-                                                Close
-                                            </button>
-                                        </form>
-                                    </div>
-                                </div>
-                            </dialog>
-                            <button className="bg-[#39344a] hover:bg-[#4a4458] text-white p-4 rounded-lg transition-colors text-left">
+                            <button className="bg-[#39344a] hover:bg-[#4a4458] text-white p-4 rounded-lg transition-colors text-left cursor-pointer">
                                 <svg
-                                    className="w-6 h-6 mb-2"
+                                    className="w-5 h-5"
                                     fill="none"
                                     stroke="currentColor"
                                     viewBox="0 0 24 24"
                                 >
                                     <path
+                                        d="M16.862 5.487l1.65-1.65a2.121 2.121 0 10-3-3l-1.65 1.65m2 2l-9.193 9.193a2 2 0 00-.512.878l-1.12 3.36a.5.5 0 00.632.632l3.36-1.12a2 2 0 00.878-.512L18.862 7.487m-2-2l2 2"
+                                        strokeWidth={2}
                                         strokeLinecap="round"
                                         strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
                                     />
                                     <path
+                                        d="M19 14v2m0 4v.01M21 16h-2m-4 0h-.01"
+                                        strokeWidth={2}
                                         strokeLinecap="round"
                                         strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
                                     />
                                 </svg>
-                                <p className="font-medium">Settings</p>
+                                <p className="font-medium">FeedGpt</p>
                                 <p className="text-xs opacity-80">
-                                    Configure dashboard
+                                    Chat with AI
                                 </p>
                             </button>
 
-                            <button className="bg-[#39344a] hover:bg-[#4a4458] text-white p-4 rounded-lg transition-colors text-left">
+                            <button
+                                className="bg-[#39344a] hover:bg-[#4a4458] text-white p-4 rounded-lg transition-colors text-left cursor-pointer"
+                                onClick={() => {
+                                    router.visit("/manager/amazon-scrape");
+                                }}
+                            >
                                 <svg
-                                    className="w-6 h-6 mb-2"
+                                    className="w-5 h-5"
                                     fill="none"
                                     stroke="currentColor"
                                     viewBox="0 0 24 24"
                                 >
                                     <path
+                                        d="M9 12a3 3 0 016 0v6a3 3 0 01-6 0v-6z"
+                                        strokeWidth={2}
                                         strokeLinecap="round"
                                         strokeLinejoin="round"
+                                    />
+                                    <path
+                                        d="M12 6V4m0 16v-2m8-6h-2m-12 0H4m14.364-5.364l-1.414 1.414M6.05 17.95l-1.414 1.414m0-13.414l1.414 1.414M17.95 17.95l1.414 1.414"
                                         strokeWidth={2}
-                                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
                                     />
                                 </svg>
-                                <p className="font-medium">Security</p>
+                                <p className="font-medium">Amazon Scrape</p>
                                 <p className="text-xs opacity-80">
-                                    Manage access
+                                    Scrape product data from Amazon
                                 </p>
                             </button>
                         </div>
