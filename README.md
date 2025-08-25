@@ -11,7 +11,7 @@ FeedMind is an AI-enhanced product feedback and analysis platform designed to he
 - 📝 **Feedback Management** – Add and manage personal reviews alongside scraped data.
 - 📂 **Conversation Categorization** – Group and title conversations like ChatGPT sessions.
 - 📄 **PDF Generation** – Convert AI responses into downloadable reports or images.
-- 🧠 **Note Summarization & Tagging** – Automatically summarize scraped or written content with OpenAI.
+- 🧠 **Note Summarization & Tagging** – Automatically summarize scraped or written content with Ollama.
 - 🧑‍💼 **User Dashboard** – View saved products, conversations, and AI outputs.
 - 🌐 **Inertia.js + React SPA** – Smooth, modern user experience powered by Laravel and React.
 
