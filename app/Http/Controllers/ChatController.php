@@ -202,7 +202,7 @@ class ChatController extends Controller
                             'role' => 'user',
                             'content' => "This is the context for you to understand user's relevance to the conversation: ".$combinedContext. "\n\n" .
                                 "This is the current text: " . $userMsg->content. "\n\n" .
-                                "Now, please generate a response based on the context and the user's message. If you don't have enough information then ask clarifying questions. If you do not find any relevant information, then just say 'I don't know'. If the context is does not match user's query, give your best guess. Oterwise, provide a helpful and relevant response.If user wants to start a new conversation  or conversation in a new topic, then just say 'Sure, let's start a new conversation'. If user asks for a summary, then provide a concise summary of the conversation. Do not include redundant previous information or timestamps.",
+                                "Now, please generate a response based on the context and the user's message.",
                         ]
                     ],
                     'stream' => false,
